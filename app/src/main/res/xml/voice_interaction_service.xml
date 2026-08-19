@@ -4,5 +4,4 @@
     android:recognitionService="com.neura.assistant.service.NeuraRecognitionService"
     android:settingsActivity="com.neura.assistant.ui.MainActivity"
     android:supportsAssist="true"
-    android:supportsVoiceInteraction="true"
     android:supportsLocalInteraction="true" />
