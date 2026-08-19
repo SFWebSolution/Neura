@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Neura — Next-Gen AI Voice Assistant for Android</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="logo.png">
   <style>
     :root {
       --bg-dark: #07080d;
@@ -86,13 +84,13 @@
       text-decoration: none;
     }
 
-    .logo-orb {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #fff, var(--cyan), var(--purple));
+    .logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: cover;
       box-shadow: 0 0 16px var(--cyan);
-      animation: pulseOrb 3s infinite ease-in-out;
+      border: 1px solid rgba(0, 240, 255, 0.4);
     }
 
     .nav-btn {
@@ -472,7 +470,7 @@
   <!-- Header -->
   <header>
     <a href="#" class="logo">
-      <div class="logo-orb"></div>
+      <img src="logo.png" alt="Neura Logo" class="logo-img">
       NEURA
     </a>
     <a href="https://github.com/SFWebSolution/Neura/releases/latest" class="nav-btn" target="_blank">Download APK</a>

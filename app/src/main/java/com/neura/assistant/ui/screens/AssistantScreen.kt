@@ -120,19 +120,29 @@ fun AssistantScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    text = "NEURA",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    color = NeuraCyan
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.neura.assistant.R.drawable.neura_logo),
+                    contentDescription = "Neura Logo",
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
                 )
-                Text(
-                    text = "Next-Gen AI Assistant",
-                    fontSize = 11.sp,
-                    color = TextTertiary
-                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "NEURA",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp,
+                        color = NeuraCyan
+                    )
+                    Text(
+                        text = "Next-Gen AI Assistant",
+                        fontSize = 11.sp,
+                        color = TextTertiary
+                    )
+                }
             }
 
             Row {
