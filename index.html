@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neura — Next-Gen AI Voice Assistant for Android</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07080d;
+      --surface-card: #12141f;
+      --card-border: #262b44;
+      --cyan: #00f0ff;
+      --purple: #7928ca;
+      --magenta: #ff007f;
+      --blue: #0070f3;
+      --green: #00e676;
+      --text-main: #f0f4f8;
+      --text-muted: #9ba3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(121, 40, 202, 0.12) 40%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-bottom {
+      position: fixed;
+      bottom: -30%;
+      right: 10%;
+      width: 700px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(255, 0, 127, 0.1) 0%, rgba(0, 112, 243, 0.08) 50%, transparent 70%);
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Navbar */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 8%;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      font-size: 24px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--cyan), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+
+    .logo-orb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--cyan), var(--purple));
+      box-shadow: 0 0 16px var(--cyan);
+      animation: pulseOrb 3s infinite ease-in-out;
+    }
+
+    .nav-btn {
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--cyan);
+      color: var(--bg-dark);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 60px 20px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 68px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--cyan) 0%, #a855f7 50%, var(--magenta) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--text-muted);
+      max-width: 680px;
+      margin-bottom: 40px;
+    }
+
+    /* Interactive Voice Sphere Canvas */
+    .sphere-container {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      margin: 10px auto 40px;
+      cursor: pointer;
+    }
+
+    #sphereCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .sphere-hint {
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--cyan);
+      opacity: 0.8;
+      white-space: nowrap;
+    }
+
+    /* Download Buttons */
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 50px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 36px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--cyan) 0%, #00d2ff 100%);
+      border-radius: 40px;
+      text-decoration: none;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.45);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .download-btn:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 0 50px rgba(0, 240, 255, 0.7);
+    }
+
+    .github-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--surface-card);
+      border: 1px solid var(--card-border);
+      border-radius: 40px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .github-btn:hover {
+      background: #1a1e2e;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* App Mockup Section */
+    .mockup-section {
+      position: relative;
+      z-index: 2;
+      max-width: 1000px;
+      margin: 40px auto 80px;
+      padding: 0 20px;
+    }
+
+    .phone-frame {
+      max-width: 380px;
+      margin: 0 auto;
+      background: #0d0f17;
+      border-radius: 44px;
+      border: 4px solid #2a2f45;
+      padding: 24px 18px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 240, 255, 0.15);
+    }
+
+    .phone-screen {
+      background: #07080d;
+      border-radius: 32px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .mockup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #1a1d2e;
+    }
+
+    .mockup-title {
+      font-weight: 800;
+      color: var(--cyan);
+      font-size: 16px;
+      letter-spacing: 1px;
+    }
+
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 13px;
+      line-height: 1.4;
+      max-width: 85%;
+    }
+
+    .user-bubble {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .neura-bubble {
+      align-self: flex-start;
+      background: #181b2b;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-bottom-left-radius: 4px;
+    }
+
+    .widget-card {
+      background: #181b2b;
+      border: 1px solid #2e344d;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .widget-temp {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Features Grid */
+    .features {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 60px auto 100px;
+      padding: 0 20px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-header h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--surface-card);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 30px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Installation Steps */
+    .steps-section {
+      background: #0b0d14;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 80px 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .steps-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .step-box {
+      background: var(--surface-card);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: var(--bg-dark);
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes pulseOrb {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--cyan)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 20px var(--magenta)); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-bottom"></div>
+
+  <!-- Header -->
+  <header>
+    <a href="#" class="logo">
+      <div class="logo-orb"></div>
+      NEURA
+    </a>
+    <a href="https://github.com/SFWebSolution/Neura/releases/latest" class="nav-btn" target="_blank">Download APK</a>
+  </header>
+
+  <!-- Hero -->
+  <main class="hero">
+    <div class="badge">✨ Powered by OpenAI GPT-4o &amp; Android Native Intelligence</div>
+    <h1>The Ultimate <span class="gradient-text">AI Voice Assistant</span> Built for Android</h1>
+    <p>Neura delivers seamless hands-free control, dynamic app launching, instant calling, alarms, real-time weather, and floating background assistance designed exclusively for Android.</p>
+
+    <!-- Interactive 3D Sphere -->
+    <div class="sphere-container" onclick="pulseSphere()">
+      <canvas id="sphereCanvas" width="520" height="520"></canvas>
+      <div class="sphere-hint">⚡ Tap the sphere to interact</div>
+    </div>
+
+    <!-- CTAs -->
+    <div class="cta-group">
+      <a href="https://github.com/SFWebSolution/Neura/releases/download/v1.0.0/Neura-v1.0.0.apk" class="download-btn" id="downloadApkLink">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Download Neura APK (v1.0.0)
+      </a>
+      <a href="https://github.com/SFWebSolution/Neura" class="github-btn" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub Repository
+      </a>
+    </div>
+  </main>
+
+  <!-- Live Mockup Showcase -->
+  <section class="mockup-section">
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="mockup-header">
+          <span class="mockup-title">NEURA</span>
+          <span style="font-size: 12px; color: var(--green);">● Online</span>
+        </div>
+        <div class="chat-bubble user-bubble">Turn on flashlight and check the weather in Tokyo</div>
+        <div class="widget-card">
+          <div>
+            <div style="font-size: 11px; color: #ffab00; font-weight: 700;">WEATHER FORECAST</div>
+            <div class="widget-temp">24°C</div>
+            <div style="font-size: 13px; color: var(--text-muted);">Clear sky • Tokyo, JP</div>
+          </div>
+          <div style="font-size: 32px;">☀️</div>
+        </div>
+        <div class="chat-bubble neura-bubble">
+          Torch turned ON! The weather in Tokyo is 24°C and clear. How else can I help?
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="features">
+    <div class="section-header">
+      <h2>Everything You Need in a Voice Assistant</h2>
+      <p style="color: var(--text-muted);">Designed from the ground up for deep Android hardware integration.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>OpenAI GPT-4o Brain</h3>
+        <p>Ultra-smart, contextual conversational abilities powered by GPT-4o with autonomous tool calling.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📞</div>
+        <h3>Hands-Free Calls &amp; SMS</h3>
+        <p>Make direct calls to contacts and compose text messages completely hands-free.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <h3>Dynamic App Launcher</h3>
+        <p>Launch any installed app (Spotify, YouTube, WhatsApp, Maps, Camera) instantly by voice.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⏰</div>
+        <h3>Alarms &amp; Timers</h3>
+        <p>Set alarms, countdown timers, and schedule calendar events in seconds.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🔦</div>
+        <h3>Hardware Controls</h3>
+        <p>Toggle flashlight, adjust ringer/media volume, and query battery telemetry.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Floating Orb &amp; Default Assistant</h3>
+        <p>Float over any app with the pulsating glowing bubble, or trigger via your phone's power button.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Steps -->
+  <section class="steps-section">
+    <div class="steps-container">
+      <div class="section-header">
+        <h2>Quick 3-Step Setup</h2>
+        <p style="color: var(--text-muted);">Get Neura running on your Android device in under 1 minute.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-box">
+          <div class="step-num">1</div>
+          <h4 style="margin-bottom: 8px;">Download APK</h4>
+          <p style="color: var(--text-muted); font-size: 13px;">Tap the download button above on your Android phone.</p>
+        </div>
+        <div class="step-box">
+          <div class="step-num">2</div>
+          <h4 style="margin-bottom: 8px;">Install on Phone</h4>
+          <p style="color: var(--text-muted); font-size: 13px;">Open the downloaded file and tap "Install" (allow unknown sources if asked).</p>
+        </div>
+        <div class="step-box">
+          <div class="step-num">3</div>
+          <h4 style="margin-bottom: 8px;">Start Talking</h4>
+          <p style="color: var(--text-muted); font-size: 13px;">Open Neura, grant microphone permission, and tap the glowing sphere!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2026 Neura AI Assistant. Built for Android. All rights reserved.</p>
+  </footer>
+
+  <!-- Canvas Fluid Sphere Shader Script -->
+  <script>
+    const canvas = document.getElementById('sphereCanvas');
+    const ctx = canvas.getContext('2d');
+    let angle = 0;
+    let pulseFactor = 1;
+
+    function drawSphere() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const r = 160 * pulseFactor;
+
+      // Glow Gradient
+      const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 10, cx, cy, r * 1.5);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.2, '#00f0ff');
+      grad.addColorStop(0.6, '#7928ca');
+      grad.addColorStop(0.9, '#ff007f');
+      grad.addColorStop(1, 'transparent');
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 30 * pulseFactor;
+      ctx.fill();
+      ctx.restore();
+
+      // Rotating orbital ring 1
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 1.2, r * 0.7, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.restore();
+
+      // Rotating orbital ring 2
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-angle * 1.4);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 1.1, r * 0.5, Math.PI / 4, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 0, 127, 0.6)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+
+      angle += 0.015;
+      if (pulseFactor > 1) {
+        pulseFactor -= 0.01;
+      }
+
+      requestAnimationFrame(drawSphere);
+    }
+
+    function pulseSphere() {
+      pulseFactor = 1.25;
+    }
+
+    drawSphere();
+  </script>
+
+</body>
+</html>
