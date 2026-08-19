@@ -1,12 +1,9 @@
 package com.neura.assistant.ui.screens
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,18 +23,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Assistant
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.RecordVoiceOver
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
@@ -46,10 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +54,7 @@ import com.neura.assistant.service.NeuraOverlayService
 import com.neura.assistant.ui.theme.NeuraCardDark
 import com.neura.assistant.ui.theme.NeuraCyan
 import com.neura.assistant.ui.theme.NeuraDarkBg
+import com.neura.assistant.ui.theme.NeuraGreen
 import com.neura.assistant.ui.theme.NeuraMagenta
 import com.neura.assistant.ui.theme.NeuraPurple
 import com.neura.assistant.ui.theme.TextPrimary
@@ -79,15 +70,12 @@ fun SettingsScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val currentApiKey by settingsRepository.apiKeyFlow.collectAsState(initial = SettingsRepository.DEFAULT_API_KEY)
     val currentModel by settingsRepository.modelNameFlow.collectAsState(initial = "gpt-4o")
     val speechRate by settingsRepository.speechRateFlow.collectAsState(initial = 1.0f)
     val speechPitch by settingsRepository.speechPitchFlow.collectAsState(initial = 1.0f)
     val isOverlayEnabled by settingsRepository.floatingOverlayFlow.collectAsState(initial = true)
-    val isBgServiceEnabled by settingsRepository.backgroundServiceFlow.collectAsState(initial = false)
+    val isBgServiceEnabled by settingsRepository.backgroundServiceFlow.collectAsState(initial = true)
     val useOpenAiTts by settingsRepository.useOpenAiTtsFlow.collectAsState(initial = false)
-
-    var apiKeyInput by remember(currentApiKey) { mutableStateOf(currentApiKey) }
 
     Column(
         modifier = Modifier
@@ -119,30 +107,39 @@ fun SettingsScreen(
             )
         }
 
-        // Section: AI Intelligence & API Key
-        SettingsSection(title = "AI Brain & API Configuration", icon = Icons.Default.Key) {
-            OutlinedTextField(
-                value = apiKeyInput,
-                onValueChange = {
-                    apiKeyInput = it
-                    coroutineScope.launch {
-                        settingsRepository.setApiKey(it)
-                    }
-                },
-                label = { Text("OpenAI API Key", color = TextSecondary) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    focusedBorderColor = NeuraCyan,
-                    unfocusedBorderColor = TextTertiary,
-                    focusedContainerColor = NeuraCardDark,
-                    unfocusedContainerColor = NeuraCardDark
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
+        // Section: AI Intelligence & Engine Status
+        SettingsSection(title = "AI Brain & Intelligence Engine", icon = Icons.Default.Key) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(NeuraDarkBg)
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = NeuraGreen,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = "OpenAI GPT-4o Engine Active",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "Pre-configured & authenticated securely",
+                        fontSize = 12.sp,
+                        color = TextSecondary
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -150,20 +147,18 @@ fun SettingsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "AI Model: $currentModel",
+                    text = "Active Model: $currentModel",
                     fontSize = 14.sp,
                     color = TextPrimary
                 )
-                Row {
-                    Button(
-                        onClick = {
-                            val nextModel = if (currentModel == "gpt-4o") "gpt-4o-mini" else "gpt-4o"
-                            coroutineScope.launch { settingsRepository.setModelName(nextModel) }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = NeuraPurple)
-                    ) {
-                        Text("Switch Model", fontSize = 12.sp)
-                    }
+                Button(
+                    onClick = {
+                        val nextModel = if (currentModel == "gpt-4o") "gpt-4o-mini" else "gpt-4o"
+                        coroutineScope.launch { settingsRepository.setModelName(nextModel) }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = NeuraPurple)
+                ) {
+                    Text("Switch Model", fontSize = 12.sp)
                 }
             }
         }
@@ -218,7 +213,7 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Section: Background & System Invocations
-        SettingsSection(title = "Background Presence & Overlays", icon = Icons.Default.Layers) {
+        SettingsSection(title = "Continuous Background Listening", icon = Icons.Default.Layers) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -226,7 +221,7 @@ fun SettingsScreen(
             ) {
                 Column {
                     Text("Persistent Background Service", color = TextPrimary, fontSize = 14.sp)
-                    Text("Enables quick lockscreen & notification listening", color = TextSecondary, fontSize = 12.sp)
+                    Text("Keeps Neura ready anywhere until asked to sleep", color = TextSecondary, fontSize = 12.sp)
                 }
                 Switch(
                     checked = isBgServiceEnabled,

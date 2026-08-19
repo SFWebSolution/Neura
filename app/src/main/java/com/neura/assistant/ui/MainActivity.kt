@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
 
     private var isListeningState = mutableStateOf(false)
     private var partialSpeechTextState = mutableStateOf("")
+    private var isAsleep = false
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -59,11 +60,22 @@ class MainActivity : ComponentActivity() {
         settingsRepository = SettingsRepository(this)
         assistantRepository = AssistantRepository(this, settingsRepository = settingsRepository)
 
+        // Automatically activate persistent background service
+        try {
+            NeuraForegroundService.start(this)
+        } catch (e: Exception) {}
+
         ttsManager = TextToSpeechManager(
             context = this,
             onSpeakingStarted = {},
             onSpeakingFinished = {
                 assistantRepository.setState(com.neura.assistant.data.repository.AssistantState.Idle)
+                // If not instructed to sleep, automatically keep listening continuously
+                if (!isAsleep) {
+                    runOnUiThread {
+                        checkAndStartListening()
+                    }
+                }
             }
         )
 
@@ -89,8 +101,14 @@ class MainActivity : ComponentActivity() {
                             repository = assistantRepository,
                             isListening = isListeningState.value,
                             partialSpeechText = partialSpeechTextState.value,
-                            onStartListening = { checkAndStartListening() },
-                            onStopListening = { stopListening() },
+                            onStartListening = {
+                                isAsleep = false
+                                checkAndStartListening()
+                            },
+                            onStopListening = {
+                                isAsleep = true
+                                stopListening()
+                            },
                             onOpenSettings = { currentScreen = "settings" },
                             onSendTextMessage = { text ->
                                 coroutineScope.launch {
@@ -116,6 +134,7 @@ class MainActivity : ComponentActivity() {
             NeuraForegroundService.ACTION_START_LISTENING,
             Intent.ACTION_ASSIST,
             "android.intent.action.VOICE_ASSIST" -> {
+                isAsleep = false
                 checkAndStartListening()
             }
         }
@@ -140,11 +159,19 @@ class MainActivity : ComponentActivity() {
             onErrorOccurred = { _ ->
                 isListeningState.value = false
                 partialSpeechTextState.value = ""
+                // Auto-retry listening if not asleep
+                if (!isAsleep) {
+                    lifecycleScope.launch {
+                        kotlinx.coroutines.delay(1000)
+                        checkAndStartListening()
+                    }
+                }
             }
         )
     }
 
     private fun checkAndStartListening() {
+        if (isAsleep) return
         val permissions = mutableListOf(Manifest.permission.RECORD_AUDIO)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
@@ -176,6 +203,21 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun sendUserPrompt(prompt: String) {
+        val trimmed = prompt.trim().lowercase()
+
+        // Check for sleep / stop command
+        if (trimmed == "sleep" || trimmed == "go to sleep" || trimmed == "stop listening" || trimmed == "goodbye" || trimmed == "bye") {
+            isAsleep = true
+            stopListening()
+            val sleepMsg = "Going to sleep. Tap the sphere or notification whenever you need me."
+            val pitch = settingsRepository.speechPitchFlow.first()
+            val rate = settingsRepository.speechRateFlow.first()
+            runOnUiThread {
+                ttsManager.speak(sleepMsg, pitch, rate)
+            }
+            return
+        }
+
         val pitch = settingsRepository.speechPitchFlow.first()
         val rate = settingsRepository.speechRateFlow.first()
         val useOpenAiTts = settingsRepository.useOpenAiTtsFlow.first()

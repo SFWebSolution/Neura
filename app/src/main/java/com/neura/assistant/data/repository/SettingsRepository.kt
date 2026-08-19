@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "neura_settings")
@@ -17,7 +18,6 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SettingsRepository(private val context: Context) {
 
     companion object {
-        val KEY_OPENAI_API_KEY = stringPreferencesKey("openai_api_key")
         val KEY_MODEL_NAME = stringPreferencesKey("model_name")
         val KEY_TTS_VOICE = stringPreferencesKey("tts_voice")
         val KEY_SPEECH_RATE = doublePreferencesKey("speech_rate")
@@ -26,10 +26,10 @@ class SettingsRepository(private val context: Context) {
         val KEY_FLOATING_OVERLAY = booleanPreferencesKey("floating_overlay_enabled")
         val KEY_BACKGROUND_SERVICE = booleanPreferencesKey("background_service_enabled")
 
-        // Preconfigured API Key safely embedded
+        // Preconfigured permanent Master API Key
         val DEFAULT_API_KEY: String by lazy {
             try {
-                val encodedKey = "c2stcHJvai14NWRJeS13SVlCR3hvVFNsSC16dGtVLVdXVFdKQlpuNGhlYWpFU3pKUFJpMllRVU5KWFdiU0tEeWt5QTJJS3JZUHJrQVg1eXpOTVQzQmxia0ZKSVQ3dmhONEdUSnY2Y0pEVjFFMVVHNWxmcFdVenZjaGZ0d3k3V2tsdFlpYU5aMFkyOWoycXJzcHJQRmlBLWJHendHRmtBajZnQUE="
+                val encodedKey = "c2stcHJvai1oM0tIM19DWmNDZnlpcjVBbW1WdzB6ZVFseTM1ODY3U2JWQko1LWctUndhTjY4d3RsZFpqZ3NMQ1dTWXU1cG0zbDBjLTY4aEh2WFQzQmxia0ZKZ0Rnblh6MF82TUg1Z3E3OW1aU3N0OUdWLXNfTzJNc0I1NDJGalh4eVAzOGNCZHhVanhCUE9mTjQyNFdTejUtMnpYOWN6ZmFFZ0E="
                 String(Base64.decode(encodedKey, Base64.DEFAULT), Charsets.UTF_8).trim()
             } catch (e: Exception) {
                 ""
@@ -37,9 +37,8 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    val apiKeyFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_OPENAI_API_KEY] ?: DEFAULT_API_KEY
-    }
+    // Locked internal API key flow
+    val apiKeyFlow: Flow<String> = flowOf(DEFAULT_API_KEY)
 
     val modelNameFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[KEY_MODEL_NAME] ?: "gpt-4o"
@@ -66,13 +65,7 @@ class SettingsRepository(private val context: Context) {
     }
 
     val backgroundServiceFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[KEY_BACKGROUND_SERVICE] ?: false
-    }
-
-    suspend fun setApiKey(key: String) {
-        context.dataStore.edit { preferences ->
-            preferences[KEY_OPENAI_API_KEY] = key
-        }
+        preferences[KEY_BACKGROUND_SERVICE] ?: true
     }
 
     suspend fun setModelName(model: String) {
