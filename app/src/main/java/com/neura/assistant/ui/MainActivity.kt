@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
         when (intent.action) {
             NeuraForegroundService.ACTION_START_LISTENING,
             Intent.ACTION_ASSIST,
-            Intent.ACTION_VOICE_ASSIST -> {
+            "android.intent.action.VOICE_ASSIST" -> {
                 checkAndStartListening()
             }
         }

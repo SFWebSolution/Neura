@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.neura.assistant.system.ActionCardData
 import com.neura.assistant.ui.theme.NeuraAmber
+import com.neura.assistant.ui.theme.NeuraBlue
 import com.neura.assistant.ui.theme.NeuraCardBorder
 import com.neura.assistant.ui.theme.NeuraCardDark
 import com.neura.assistant.ui.theme.NeuraCyan

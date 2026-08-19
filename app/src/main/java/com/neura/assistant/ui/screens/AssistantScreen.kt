@@ -60,6 +60,7 @@ import com.neura.assistant.data.repository.AssistantState
 import com.neura.assistant.ui.components.AudioWaveformVisualizer
 import com.neura.assistant.ui.components.ChatBubble
 import com.neura.assistant.ui.components.NeuraGlowSphere
+import com.neura.assistant.ui.theme.NeuraBlue
 import com.neura.assistant.ui.theme.NeuraCardDark
 import com.neura.assistant.ui.theme.NeuraCyan
 import com.neura.assistant.ui.theme.NeuraDarkBg
