@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Neura</string>
+    <string name="tile_label">Neura Voice</string>
+    <string name="assistant_ready">Neura is listening…</string>
+    <string name="foreground_service_title">Neura AI Voice Assistant</string>
+    <string name="foreground_service_desc">Background listening &amp; quick triggers active</string>
+    <string name="default_assistant_label">Neura Assistant</string>
+    <string name="voice_search_prompt">How can Neura help you today?</string>
+</resources>
