@@ -41,7 +41,7 @@ class SettingsRepository(private val context: Context) {
     val apiKeyFlow: Flow<String> = flowOf(DEFAULT_API_KEY)
 
     val modelNameFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_MODEL_NAME] ?: "gemini-2.0-flash"
+        preferences[KEY_MODEL_NAME] ?: "gemini-flash-latest"
     }
 
     val ttsVoiceFlow: Flow<String> = context.dataStore.data.map { preferences ->

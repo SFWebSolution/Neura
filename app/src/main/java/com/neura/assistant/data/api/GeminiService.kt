@@ -29,15 +29,16 @@ class GeminiService(
     suspend fun generateContent(
         apiKey: String,
         request: GeminiRequest,
-        modelName: String = "gemini-2.0-flash"
+        modelName: String = "gemini-flash-latest"
     ): Result<GeminiResponse> = withContext(Dispatchers.IO) {
         try {
             if (apiKey.isBlank()) {
                 return@withContext Result.failure(Exception("Gemini API key is missing."))
             }
 
+            val targetModel = if (modelName.isBlank()) "gemini-flash-latest" else modelName
             val requestBody = json.encodeToString(request).toRequestBody(jsonMediaType)
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/$modelName:generateContent?key=$apiKey"
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/$targetModel:generateContent?key=$apiKey"
 
             val httpRequest = Request.Builder()
                 .url(url)
@@ -49,10 +50,6 @@ class GeminiService(
             val responseBody = response.body?.string() ?: ""
 
             if (!response.isSuccessful) {
-                // If 2.0-flash returned error, try 1.5-flash fallback
-                if (modelName != "gemini-1.5-flash") {
-                    return@withContext generateContent(apiKey, request, "gemini-1.5-flash")
-                }
                 return@withContext Result.failure(Exception("Gemini Error (${response.code}): $responseBody"))
             }
 
