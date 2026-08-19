@@ -26,10 +26,10 @@ class SettingsRepository(private val context: Context) {
         val KEY_FLOATING_OVERLAY = booleanPreferencesKey("floating_overlay_enabled")
         val KEY_BACKGROUND_SERVICE = booleanPreferencesKey("background_service_enabled")
 
-        // Preconfigured permanent Master API Key
+        // Preconfigured permanent Master Gemini API Key
         val DEFAULT_API_KEY: String by lazy {
             try {
-                val encodedKey = "c2stcHJvai1oM0tIM19DWmNDZnlpcjVBbW1WdzB6ZVFseTM1ODY3U2JWQko1LWctUndhTjY4d3RsZFpqZ3NMQ1dTWXU1cG0zbDBjLTY4aEh2WFQzQmxia0ZKZ0Rnblh6MF82TUg1Z3E3OW1aU3N0OUdWLXNfTzJNc0I1NDJGalh4eVAzOGNCZHhVanhCUE9mTjQyNFdTejUtMnpYOWN6ZmFFZ0E="
+                val encodedKey = "QVEuQWI4Uk42S0dPQnhQSElqYm5fd2lfMzllUGZvVVpfR1IwTzljcHI4LVVQRDMwU1lSWWc="
                 String(Base64.decode(encodedKey, Base64.DEFAULT), Charsets.UTF_8).trim()
             } catch (e: Exception) {
                 ""
@@ -41,7 +41,7 @@ class SettingsRepository(private val context: Context) {
     val apiKeyFlow: Flow<String> = flowOf(DEFAULT_API_KEY)
 
     val modelNameFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_MODEL_NAME] ?: "gpt-4o"
+        preferences[KEY_MODEL_NAME] ?: "gemini-2.0-flash"
     }
 
     val ttsVoiceFlow: Flow<String> = context.dataStore.data.map { preferences ->

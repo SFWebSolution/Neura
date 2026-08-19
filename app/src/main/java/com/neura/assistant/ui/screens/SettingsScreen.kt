@@ -126,13 +126,13 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "OpenAI GPT-4o Engine Active",
+                        text = "Google Gemini AI Engine Active",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = TextPrimary
                     )
                     Text(
-                        text = "Pre-configured & authenticated securely",
+                        text = "Gemini 2.0 Flash connected & authenticated",
                         fontSize = 12.sp,
                         color = TextSecondary
                     )
@@ -153,7 +153,7 @@ fun SettingsScreen(
                 )
                 Button(
                     onClick = {
-                        val nextModel = if (currentModel == "gpt-4o") "gpt-4o-mini" else "gpt-4o"
+                        val nextModel = if (currentModel == "gemini-2.0-flash") "gemini-1.5-flash" else "gemini-2.0-flash"
                         coroutineScope.launch { settingsRepository.setModelName(nextModel) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = NeuraPurple)

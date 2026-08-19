@@ -70,11 +70,9 @@ class MainActivity : ComponentActivity() {
             onSpeakingStarted = {},
             onSpeakingFinished = {
                 assistantRepository.setState(com.neura.assistant.data.repository.AssistantState.Idle)
-                // If not instructed to sleep, automatically keep listening continuously
-                if (!isAsleep) {
-                    runOnUiThread {
-                        checkAndStartListening()
-                    }
+                // Resume listening automatically so conversation continues
+                runOnUiThread {
+                    checkAndStartListening()
                 }
             }
         )
@@ -150,7 +148,7 @@ class MainActivity : ComponentActivity() {
                 partialSpeechTextState.value = ""
                 isListeningState.value = false
                 lifecycleScope.launch {
-                    sendUserPrompt(finalResult)
+                    handleRecognizedSpeech(finalResult)
                 }
             },
             onRmsChanged = { rms ->
@@ -159,19 +157,16 @@ class MainActivity : ComponentActivity() {
             onErrorOccurred = { _ ->
                 isListeningState.value = false
                 partialSpeechTextState.value = ""
-                // Auto-retry listening if not asleep
-                if (!isAsleep) {
-                    lifecycleScope.launch {
-                        kotlinx.coroutines.delay(1000)
-                        checkAndStartListening()
-                    }
+                // Auto restart background listening
+                lifecycleScope.launch {
+                    kotlinx.coroutines.delay(1200)
+                    checkAndStartListening()
                 }
             }
         )
     }
 
     private fun checkAndStartListening() {
-        if (isAsleep) return
         val permissions = mutableListOf(Manifest.permission.RECORD_AUDIO)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
@@ -202,14 +197,48 @@ class MainActivity : ComponentActivity() {
         assistantRepository.setState(com.neura.assistant.data.repository.AssistantState.Idle)
     }
 
-    private suspend fun sendUserPrompt(prompt: String) {
-        val trimmed = prompt.trim().lowercase()
+    private suspend fun handleRecognizedSpeech(speech: String) {
+        val raw = speech.trim()
+        val lower = raw.lowercase()
 
-        // Check for sleep / stop command
-        if (trimmed == "sleep" || trimmed == "go to sleep" || trimmed == "stop listening" || trimmed == "goodbye" || trimmed == "bye") {
+        // 1. Check for wake words
+        val wakeWords = listOf("neura wake up", "wake up neura", "hey neura", "ok neura", "hello neura", "neura", "wake up")
+        var matchedWakeWord: String? = null
+        for (w in wakeWords) {
+            if (lower.startsWith(w)) {
+                matchedWakeWord = w
+                break
+            }
+        }
+
+        if (matchedWakeWord != null) {
+            isAsleep = false
+            val remainingCommand = lower.removePrefix(matchedWakeWord).trim().removePrefix("and").trim()
+            if (remainingCommand.isBlank()) {
+                val wakeGreeting = "I'm awake and listening, what can I do for you?"
+                val pitch = settingsRepository.speechPitchFlow.first()
+                val rate = settingsRepository.speechRateFlow.first()
+                runOnUiThread {
+                    ttsManager.speak(wakeGreeting, pitch, rate)
+                }
+                return
+            } else {
+                sendUserPrompt(remainingCommand)
+                return
+            }
+        }
+
+        // If in sleep mode and no wake word was spoken, ignore and keep listening in background
+        if (isAsleep) {
+            checkAndStartListening()
+            return
+        }
+
+        // Check for sleep command
+        if (lower == "sleep" || lower == "go to sleep" || lower == "stop listening" || lower == "goodbye" || lower == "bye") {
             isAsleep = true
             stopListening()
-            val sleepMsg = "Going to sleep. Tap the sphere or notification whenever you need me."
+            val sleepMsg = "Going to sleep. Say 'Neura wake up' or tap the sphere whenever you need me."
             val pitch = settingsRepository.speechPitchFlow.first()
             val rate = settingsRepository.speechRateFlow.first()
             runOnUiThread {
@@ -218,6 +247,11 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        // Normal active conversation prompt
+        sendUserPrompt(raw)
+    }
+
+    private suspend fun sendUserPrompt(prompt: String) {
         val pitch = settingsRepository.speechPitchFlow.first()
         val rate = settingsRepository.speechRateFlow.first()
         val useOpenAiTts = settingsRepository.useOpenAiTtsFlow.first()

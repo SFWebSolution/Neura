@@ -1,22 +1,26 @@
 package com.neura.assistant.data.repository
 
 import android.content.Context
-import com.neura.assistant.data.api.OpenAiService
-import com.neura.assistant.data.api.models.OpenAiChatRequest
-import com.neura.assistant.data.api.models.OpenAiMessage
+import com.neura.assistant.data.api.GeminiService
+import com.neura.assistant.data.api.models.GeminiContent
+import com.neura.assistant.data.api.models.GeminiFunctionResponse
+import com.neura.assistant.data.api.models.GeminiPart
+import com.neura.assistant.data.api.models.GeminiRequest
+import com.neura.assistant.data.api.models.GeminiSystemInstruction
+import com.neura.assistant.data.api.models.GeminiTextPart
 import com.neura.assistant.data.local.entities.MessageSender
 import com.neura.assistant.data.local.entities.UiMessage
 import com.neura.assistant.system.ActionResult
 import com.neura.assistant.system.DeviceActionExecutor
 import com.neura.assistant.system.DeviceToolsDefinition
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 sealed class AssistantState {
     object Idle : AssistantState()
@@ -28,7 +32,7 @@ sealed class AssistantState {
 
 class AssistantRepository(
     private val context: Context,
-    private val openAiService: OpenAiService = OpenAiService(),
+    private val geminiService: GeminiService = GeminiService(),
     private val settingsRepository: SettingsRepository = SettingsRepository(context),
     private val deviceActionExecutor: DeviceActionExecutor = DeviceActionExecutor(context)
 ) {
@@ -48,11 +52,11 @@ class AssistantRepository(
     private val _audioAmplitude = MutableStateFlow(0f)
     val audioAmplitude: StateFlow<Float> = _audioAmplitude.asStateFlow()
 
-    private val openAiHistory = mutableListOf<OpenAiMessage>()
+    private val conversationHistory = mutableListOf<GeminiContent>()
 
     private val systemPrompt = """
         You are Neura, a powerful, intelligent, and elegant AI voice assistant on Android.
-        You are lightning-fast, witty, concise, helpful, and speak in a friendly, conversational tone suitable for voice synthesis.
+        You are lightning-fast, concise, helpful, and speak in a friendly, conversational tone suitable for voice synthesis.
         You have direct control over this Android device through your function calling tools:
         - Calling contacts & phone numbers (make_phone_call)
         - Sending SMS text messages (send_sms)
@@ -69,10 +73,6 @@ class AssistantRepository(
         When executing device actions, confirm the action smoothly.
     """.trimIndent()
 
-    init {
-        openAiHistory.add(OpenAiMessage(role = "system", content = systemPrompt))
-    }
-
     fun setAudioAmplitude(amplitude: Float) {
         _audioAmplitude.value = amplitude
     }
@@ -87,7 +87,12 @@ class AssistantRepository(
         // 1. Append user message to UI
         val userMsg = UiMessage(sender = MessageSender.USER, text = promptText)
         _messages.value = _messages.value + userMsg
-        openAiHistory.add(OpenAiMessage(role = "user", content = promptText))
+        conversationHistory.add(
+            GeminiContent(
+                role = "user",
+                parts = listOf(GeminiPart(text = promptText))
+            )
+        )
 
         _state.value = AssistantState.Processing("Neura is thinking…")
 
@@ -95,14 +100,17 @@ class AssistantRepository(
             val apiKey = settingsRepository.apiKeyFlow.first()
             val model = settingsRepository.modelNameFlow.first()
 
-            var chatRequest = OpenAiChatRequest(
-                model = model,
-                messages = openAiHistory.toList(),
-                tools = DeviceToolsDefinition.allTools,
-                temperature = 0.7
+            val systemInstruction = GeminiSystemInstruction(
+                parts = listOf(GeminiTextPart(text = systemPrompt))
             )
 
-            var responseResult = openAiService.createChatCompletion(apiKey, chatRequest)
+            var geminiRequest = GeminiRequest(
+                contents = conversationHistory.toList(),
+                systemInstruction = systemInstruction,
+                tools = listOf(DeviceToolsDefinition.geminiToolWrapper)
+            )
+
+            var responseResult = geminiService.generateContent(apiKey, geminiRequest, model)
             if (responseResult.isFailure) {
                 val err = responseResult.exceptionOrNull()?.message ?: "Unknown error"
                 _state.value = AssistantState.Error(err)
@@ -113,27 +121,32 @@ class AssistantRepository(
                 return@withContext
             }
 
-            var chatResponse = responseResult.getOrThrow()
-            var choice = chatResponse.choices.firstOrNull()
-            var assistantMsg = choice?.message
+            var geminiResponse = responseResult.getOrThrow()
+            var candidate = geminiResponse.candidates?.firstOrNull()
+            var modelContent = candidate?.content
 
-            // Handle Tool Calling recursion loop
-            while (assistantMsg != null && !assistantMsg.toolCalls.isNullOrEmpty()) {
-                openAiHistory.add(assistantMsg)
+            // Loop to handle function calls
+            var loopCount = 0
+            while (modelContent != null && loopCount < 5) {
+                val functionCalls = modelContent.parts.mapNotNull { it.functionCall }
+                if (functionCalls.isEmpty()) {
+                    break
+                }
 
-                for (toolCall in assistantMsg.toolCalls) {
-                    val functionName = toolCall.function.name
-                    val functionArgs = toolCall.function.arguments
+                loopCount++
+                conversationHistory.add(modelContent)
+
+                val responseParts = mutableListOf<GeminiPart>()
+
+                for (fc in functionCalls) {
+                    val functionName = fc.name
+                    val functionArgs = fc.args?.toString() ?: "{}"
 
                     _state.value = AssistantState.Processing("Executing $functionName…")
-
-                    // Show tool execution in UI
                     val toolResult = deviceActionExecutor.executeTool(functionName, functionArgs)
 
-                    val toolResultContent: String
-                    when (toolResult) {
+                    val resultText = when (toolResult) {
                         is ActionResult.Success -> {
-                            toolResultContent = toolResult.message
                             if (toolResult.cardData != null) {
                                 _messages.value = _messages.value + UiMessage(
                                     sender = MessageSender.NEURA,
@@ -142,43 +155,60 @@ class AssistantRepository(
                                     toolName = functionName
                                 )
                             }
+                            toolResult.message
                         }
                         is ActionResult.Error -> {
-                            toolResultContent = "Error: ${toolResult.errorMessage}"
                             _messages.value = _messages.value + UiMessage(
                                 sender = MessageSender.SYSTEM,
                                 text = "Failed to execute $functionName: ${toolResult.errorMessage}"
                             )
+                            "Error: ${toolResult.errorMessage}"
                         }
                     }
 
-                    openAiHistory.add(
-                        OpenAiMessage(
-                            role = "tool",
-                            name = functionName,
-                            content = toolResultContent,
-                            toolCallId = toolCall.id
+                    val fnResponseObject = buildJsonObject {
+                        put("result", resultText)
+                    }
+
+                    responseParts.add(
+                        GeminiPart(
+                            functionResponse = GeminiFunctionResponse(
+                                name = functionName,
+                                response = fnResponseObject
+                            )
                         )
                     )
                 }
 
-                // Call OpenAI again with the tool responses to produce natural voice answer
-                chatRequest = OpenAiChatRequest(
-                    model = model,
-                    messages = openAiHistory.toList(),
-                    tools = DeviceToolsDefinition.allTools,
-                    temperature = 0.7
+                val functionContent = GeminiContent(
+                    role = "function",
+                    parts = responseParts
                 )
-                responseResult = openAiService.createChatCompletion(apiKey, chatRequest)
+                conversationHistory.add(functionContent)
+
+                geminiRequest = GeminiRequest(
+                    contents = conversationHistory.toList(),
+                    systemInstruction = systemInstruction,
+                    tools = listOf(DeviceToolsDefinition.geminiToolWrapper)
+                )
+
+                responseResult = geminiService.generateContent(apiKey, geminiRequest, model)
                 if (responseResult.isFailure) break
 
-                chatResponse = responseResult.getOrThrow()
-                choice = chatResponse.choices.firstOrNull()
-                assistantMsg = choice?.message
+                geminiResponse = responseResult.getOrThrow()
+                candidate = geminiResponse.candidates?.firstOrNull()
+                modelContent = candidate?.content
             }
 
-            val finalReply = assistantMsg?.content ?: "Done!"
-            openAiHistory.add(OpenAiMessage(role = "assistant", content = finalReply))
+            val finalReply = modelContent?.parts?.mapNotNull { it.text }?.joinToString(" ")?.trim()
+                ?: "Action completed."
+
+            conversationHistory.add(
+                GeminiContent(
+                    role = "model",
+                    parts = listOf(GeminiPart(text = finalReply))
+                )
+            )
 
             _messages.value = _messages.value + UiMessage(
                 sender = MessageSender.NEURA,
@@ -199,8 +229,7 @@ class AssistantRepository(
     }
 
     fun clearHistory() {
-        openAiHistory.clear()
-        openAiHistory.add(OpenAiMessage(role = "system", content = systemPrompt))
+        conversationHistory.clear()
         _messages.value = listOf(
             UiMessage(
                 sender = MessageSender.NEURA,
