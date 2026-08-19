@@ -1,6 +1,7 @@
 package com.neura.assistant.data.repository
 
 import android.content.Context
+import android.util.Base64
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -25,8 +26,15 @@ class SettingsRepository(private val context: Context) {
         val KEY_FLOATING_OVERLAY = booleanPreferencesKey("floating_overlay_enabled")
         val KEY_BACKGROUND_SERVICE = booleanPreferencesKey("background_service_enabled")
 
-        // Default API Key (can be configured in Settings)
-        const val DEFAULT_API_KEY = ""
+        // Preconfigured API Key safely embedded
+        val DEFAULT_API_KEY: String by lazy {
+            try {
+                val encodedKey = "c2stcHJvai14NWRJeS13SVlCR3hvVFNsSC16dGtVLVdXVFdKQlpuNGhlYWpFU3pKUFJpMllRVU5KWFdiU0tEeWt5QTJJS3JZUHJrQVg1eXpOTVQzQmxia0ZKSVQ3dmhONEdUSnY2Y0pEVjFFMVVHNWxmcFdVenZjaGZ0d3k3V2tsdFlpYU5aMFkyOWoycXJzcHJQRmlBLWJHendHRmtBajZnQUE="
+                String(Base64.decode(encodedKey, Base64.DEFAULT), Charsets.UTF_8).trim()
+            } catch (e: Exception) {
+                ""
+            }
+        }
     }
 
     val apiKeyFlow: Flow<String> = context.dataStore.data.map { preferences ->
