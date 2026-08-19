@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.accompanist.permissions)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)

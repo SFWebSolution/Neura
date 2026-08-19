@@ -2,8 +2,7 @@ package com.neura.assistant.system
 
 import com.neura.assistant.data.api.models.OpenAiFunction
 import com.neura.assistant.data.api.models.OpenAiTool
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -66,8 +65,8 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("contact_or_number"))
-                    add(kotlinx.serialization.json.JsonPrimitive("message"))
+                    add("contact_or_number")
+                    add("message")
                 }
             }
         )
@@ -86,7 +85,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("app_name"))
+                    add("app_name")
                 }
             }
         )
@@ -113,8 +112,8 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("hour"))
-                    add(kotlinx.serialization.json.JsonPrimitive("minute"))
+                    add("hour")
+                    add("minute")
                 }
             }
         )
@@ -137,7 +136,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("length_seconds"))
+                    add("length_seconds")
                 }
             }
         )
@@ -156,7 +155,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("state"))
+                    add("state")
                 }
             }
         )
@@ -179,7 +178,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("action"))
+                    add("action")
                 }
             }
         )
@@ -198,7 +197,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("location"))
+                    add("location")
                 }
             }
         )
@@ -228,7 +227,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("query"))
+                    add("query")
                 }
             }
         )
@@ -247,7 +246,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("url"))
+                    add("url")
                 }
             }
         )
@@ -290,7 +289,7 @@ object DeviceToolsDefinition {
                     }
                 }
                 putJsonArray("required") {
-                    add(kotlinx.serialization.json.JsonPrimitive("title"))
+                    add("title")
                 }
             }
         )

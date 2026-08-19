@@ -63,7 +63,7 @@ class NeuraOverlayService : Service() {
 
         val frame = FrameLayout(this).apply {
             val img = ImageView(this@NeuraOverlayService).apply {
-                setImageResource(R.drawable.ic_launcher)
+                setImageResource(R.drawable.ic_neura_tile)
                 layoutParams = FrameLayout.LayoutParams(160, 160)
             }
             addView(img)
