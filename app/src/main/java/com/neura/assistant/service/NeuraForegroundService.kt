@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.neura.assistant.R
 import com.neura.assistant.ui.MainActivity
@@ -39,6 +40,13 @@ class NeuraForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+
+        // Auto-launch floating glowing orb overlay if permission is granted
+        try {
+            if (Settings.canDrawOverlays(this)) {
+                NeuraOverlayService.start(this)
+            }
+        } catch (e: Exception) {}
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -49,7 +57,6 @@ class NeuraForegroundService : Service() {
                 return START_NOT_STICKY
             }
             ACTION_START_LISTENING -> {
-                // Launch MainActivity in voice mode
                 val mainIntent = Intent(this, MainActivity::class.java).apply {
                     action = ACTION_START_LISTENING
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -70,10 +77,10 @@ class NeuraForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Neura Assistant Background Service",
+                "Neura Siri-Like Background Assistant",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Keeps Neura ready to listen and execute voice commands"
+                description = "Keeps Neura listening continuously in background for 'Neura wake up'"
                 setShowBadge(false)
             }
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -103,11 +110,11 @@ class NeuraForegroundService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Neura AI Assistant")
-            .setContentText("Tap to speak or open Neura")
-            .setSmallIcon(R.drawable.ic_neura_tile)
+            .setContentTitle("Neura is Listening")
+            .setContentText("Say 'Neura wake up' or tap to speak from anywhere")
+            .setSmallIcon(R.drawable.neura_logo)
             .setContentIntent(openPendingIntent)
-            .addAction(R.drawable.ic_neura_tile, "Speak to Neura", listenPendingIntent)
+            .addAction(R.drawable.neura_logo, "🎙️ Talk to Neura", listenPendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()

@@ -3,7 +3,6 @@ package com.neura.assistant.data.repository
 import android.content.Context
 import com.neura.assistant.data.api.GeminiService
 import com.neura.assistant.data.api.models.GeminiContent
-import com.neura.assistant.data.api.models.GeminiFunctionResponse
 import com.neura.assistant.data.api.models.GeminiPart
 import com.neura.assistant.data.api.models.GeminiRequest
 import com.neura.assistant.data.api.models.GeminiSystemInstruction
@@ -19,8 +18,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 sealed class AssistantState {
     object Idle : AssistantState()
@@ -55,7 +52,7 @@ class AssistantRepository(
     private val conversationHistory = mutableListOf<GeminiContent>()
 
     private val systemPrompt = """
-        You are Neura, a powerful, intelligent, and elegant AI voice assistant on Android.
+        You are Neura, a powerful, intelligent, and elegant AI voice assistant on Android (just like Siri on iPhone, but for Android).
         You are lightning-fast, concise, helpful, and speak in a friendly, conversational tone suitable for voice synthesis.
         You have direct control over this Android device through your function calling tools:
         - Calling contacts & phone numbers (make_phone_call)
@@ -69,7 +66,7 @@ class AssistantRepository(
         - Web searches & browser links (web_search, open_url)
         - Opening the camera & calendar events (open_camera, create_calendar_event)
         
-        Keep your spoken responses concise and natural (1-3 sentences unless asked for an in-depth explanation).
+        Keep your spoken responses concise and natural (1-2 sentences).
         When executing device actions, confirm the action smoothly.
     """.trimIndent()
 
@@ -104,13 +101,13 @@ class AssistantRepository(
                 parts = listOf(GeminiTextPart(text = systemPrompt))
             )
 
-            var geminiRequest = GeminiRequest(
+            val geminiRequest = GeminiRequest(
                 contents = conversationHistory.toList(),
                 systemInstruction = systemInstruction,
                 tools = listOf(DeviceToolsDefinition.geminiToolWrapper)
             )
 
-            var responseResult = geminiService.generateContent(apiKey, geminiRequest, model)
+            val responseResult = geminiService.generateContent(apiKey, geminiRequest, model)
             if (responseResult.isFailure) {
                 val err = responseResult.exceptionOrNull()?.message ?: "Unknown error"
                 _state.value = AssistantState.Error(err)
@@ -121,22 +118,16 @@ class AssistantRepository(
                 return@withContext
             }
 
-            var geminiResponse = responseResult.getOrThrow()
-            var candidate = geminiResponse.candidates?.firstOrNull()
-            var modelContent = candidate?.content
+            val geminiResponse = responseResult.getOrThrow()
+            val candidate = geminiResponse.candidates?.firstOrNull()
+            val modelContent = candidate?.content
 
-            // Loop to handle function calls
-            var loopCount = 0
-            while (modelContent != null && loopCount < 5) {
-                val functionCalls = modelContent.parts.mapNotNull { it.functionCall }
-                if (functionCalls.isEmpty()) {
-                    break
-                }
+            val functionCalls = modelContent?.parts?.mapNotNull { it.functionCall } ?: emptyList()
 
-                loopCount++
-                conversationHistory.add(modelContent)
+            val finalReply: String
 
-                val responseParts = mutableListOf<GeminiPart>()
+            if (functionCalls.isNotEmpty()) {
+                val executedMessages = mutableListOf<String>()
 
                 for (fc in functionCalls) {
                     val functionName = fc.name
@@ -145,74 +136,42 @@ class AssistantRepository(
                     _state.value = AssistantState.Processing("Executing $functionName…")
                     val toolResult = deviceActionExecutor.executeTool(functionName, functionArgs)
 
-                    val resultText = when (toolResult) {
+                    when (toolResult) {
                         is ActionResult.Success -> {
-                            if (toolResult.cardData != null) {
-                                _messages.value = _messages.value + UiMessage(
-                                    sender = MessageSender.NEURA,
-                                    text = toolResult.message,
-                                    cardData = toolResult.cardData,
-                                    toolName = functionName
-                                )
-                            }
-                            toolResult.message
+                            executedMessages.add(toolResult.message)
+                            _messages.value = _messages.value + UiMessage(
+                                sender = MessageSender.NEURA,
+                                text = toolResult.message,
+                                cardData = toolResult.cardData,
+                                toolName = functionName
+                            )
                         }
                         is ActionResult.Error -> {
+                            executedMessages.add("Failed to execute $functionName: ${toolResult.errorMessage}")
                             _messages.value = _messages.value + UiMessage(
                                 sender = MessageSender.SYSTEM,
                                 text = "Failed to execute $functionName: ${toolResult.errorMessage}"
                             )
-                            "Error: ${toolResult.errorMessage}"
                         }
                     }
-
-                    val fnResponseObject = buildJsonObject {
-                        put("result", resultText)
-                    }
-
-                    responseParts.add(
-                        GeminiPart(
-                            functionResponse = GeminiFunctionResponse(
-                                name = functionName,
-                                response = fnResponseObject
-                            )
-                        )
-                    )
                 }
 
-                val functionContent = GeminiContent(
-                    role = "function",
-                    parts = responseParts
+                finalReply = executedMessages.joinToString(". ")
+            } else {
+                finalReply = modelContent?.parts?.mapNotNull { it.text }?.joinToString(" ")?.trim()
+                    ?: "I'm here to help."
+
+                _messages.value = _messages.value + UiMessage(
+                    sender = MessageSender.NEURA,
+                    text = finalReply
                 )
-                conversationHistory.add(functionContent)
-
-                geminiRequest = GeminiRequest(
-                    contents = conversationHistory.toList(),
-                    systemInstruction = systemInstruction,
-                    tools = listOf(DeviceToolsDefinition.geminiToolWrapper)
-                )
-
-                responseResult = geminiService.generateContent(apiKey, geminiRequest, model)
-                if (responseResult.isFailure) break
-
-                geminiResponse = responseResult.getOrThrow()
-                candidate = geminiResponse.candidates?.firstOrNull()
-                modelContent = candidate?.content
             }
-
-            val finalReply = modelContent?.parts?.mapNotNull { it.text }?.joinToString(" ")?.trim()
-                ?: "Action completed."
 
             conversationHistory.add(
                 GeminiContent(
                     role = "model",
                     parts = listOf(GeminiPart(text = finalReply))
                 )
-            )
-
-            _messages.value = _messages.value + UiMessage(
-                sender = MessageSender.NEURA,
-                text = finalReply
             )
 
             _state.value = AssistantState.Speaking(finalReply)
