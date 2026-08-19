@@ -6,11 +6,8 @@ import android.net.Uri
 import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.MediaStore
-import android.telephony.SmsManager
 import com.neura.assistant.data.api.WeatherService
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -75,20 +72,20 @@ class DeviceActionExecutor(
                 }
 
                 "set_alarm" -> {
-                    val hour = args?.get("hour")?.jsonPrimitive?.intOrNull ?: 8
-                    val minute = args?.get("minute")?.jsonPrimitive?.intOrNull ?: 0
+                    val hour = args?.get("hour")?.jsonPrimitive?.content?.toIntOrNull() ?: 8
+                    val minute = args?.get("minute")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
                     val label = args?.get("label")?.jsonPrimitive?.content ?: "Neura Alarm"
                     setAlarm(hour, minute, label)
                 }
 
                 "set_timer" -> {
-                    val seconds = args?.get("length_seconds")?.jsonPrimitive?.intOrNull ?: 60
+                    val seconds = args?.get("length_seconds")?.jsonPrimitive?.content?.toIntOrNull() ?: 60
                     val label = args?.get("label")?.jsonPrimitive?.content ?: "Neura Timer"
                     setTimer(seconds, label)
                 }
 
                 "toggle_flashlight" -> {
-                    val state = args?.get("state")?.jsonPrimitive?.booleanOrNull ?: true
+                    val state = args?.get("state")?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: true
                     val res = flashlightController.toggleFlashlight(state)
                     if (res.isSuccess) {
                         ActionResult.Success(res.getOrThrow(), ActionCardData.FlashlightCard(state))
@@ -99,7 +96,7 @@ class DeviceActionExecutor(
 
                 "adjust_volume" -> {
                     val action = args?.get("action")?.jsonPrimitive?.content ?: "up"
-                    val percentage = args?.get("percentage")?.jsonPrimitive?.intOrNull
+                    val percentage = args?.get("percentage")?.jsonPrimitive?.content?.toIntOrNull()
                     val res = volumeController.adjustVolume(action, percentage)
                     if (res.isSuccess) {
                         ActionResult.Success(res.getOrThrow())

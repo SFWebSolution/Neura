@@ -3,7 +3,6 @@ package com.neura.assistant.data.api
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -42,8 +41,8 @@ class WeatherService(
             }
 
             val firstLoc = results[0].jsonObject
-            val lat = firstLoc["latitude"]?.jsonPrimitive?.doubleOrNull ?: 0.0
-            val lon = firstLoc["longitude"]?.jsonPrimitive?.doubleOrNull ?: 0.0
+            val lat = firstLoc["latitude"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+            val lon = firstLoc["longitude"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
             val name = firstLoc["name"]?.jsonPrimitive?.content ?: locationQuery
             val country = firstLoc["country"]?.jsonPrimitive?.content ?: ""
             val fullLocationName = if (country.isNotBlank()) "$name, $country" else name
@@ -57,11 +56,11 @@ class WeatherService(
             val weatherJson = json.parseToJsonElement(weatherBody).jsonObject
             val current = weatherJson["current"]?.jsonObject ?: return@withContext Result.failure(Exception("Missing current weather data"))
 
-            val temp = current["temperature_2m"]?.jsonPrimitive?.doubleOrNull ?: 0.0
+            val temp = current["temperature_2m"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
             val humidity = current["relative_humidity_2m"]?.jsonPrimitive?.content?.toDoubleOrNull()?.toInt() ?: 0
             val isDay = (current["is_day"]?.jsonPrimitive?.content?.toIntOrNull() ?: 1) == 1
             val weatherCode = current["weather_code"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-            val windSpeed = current["wind_speed_10m"]?.jsonPrimitive?.doubleOrNull ?: 0.0
+            val windSpeed = current["wind_speed_10m"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
 
             val desc = mapWmoCodeToDescription(weatherCode)
 

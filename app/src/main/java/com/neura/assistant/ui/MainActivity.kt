@@ -11,9 +11,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.neura.assistant.data.repository.AssistantRepository
 import com.neura.assistant.data.repository.SettingsRepository
 import com.neura.assistant.service.NeuraForegroundService
@@ -63,9 +61,7 @@ class MainActivity : ComponentActivity() {
 
         ttsManager = TextToSpeechManager(
             context = this,
-            onSpeakingStarted = {
-                // When speaking, we can animate or set state if desired
-            },
+            onSpeakingStarted = {},
             onSpeakingFinished = {
                 assistantRepository.setState(com.neura.assistant.data.repository.AssistantState.Idle)
             }
@@ -134,14 +130,14 @@ class MainActivity : ComponentActivity() {
             onFinalResult = { finalResult ->
                 partialSpeechTextState.value = ""
                 isListeningState.value = false
-                kotlinx.coroutines.GlobalScope.launch {
+                lifecycleScope.launch {
                     sendUserPrompt(finalResult)
                 }
             },
             onRmsChanged = { rms ->
                 assistantRepository.setAudioAmplitude(rms)
             },
-            onErrorOccurred = { err ->
+            onErrorOccurred = { _ ->
                 isListeningState.value = false
                 partialSpeechTextState.value = ""
             }
@@ -189,7 +185,7 @@ class MainActivity : ComponentActivity() {
         assistantRepository.processUserPrompt(prompt) { spokenResponse ->
             if (useOpenAiTts && apiKey.isNotBlank()) {
                 val ttsFile = File(cacheDir, "neura_response.mp3")
-                kotlinx.coroutines.GlobalScope.launch {
+                lifecycleScope.launch {
                     val openAiService = com.neura.assistant.data.api.OpenAiService()
                     val res = openAiService.generateSpeech(apiKey, spokenResponse, ttsFile, voice)
                     if (res.isSuccess) {
