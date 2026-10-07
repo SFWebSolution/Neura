@@ -1,21 +1,17 @@
 // ==========================================
-// CAMPUS LIFE: 9JA UNI SIMULATOR ENGINE
-// Inspired by Lagos Life, Elevated for Nigerian Campus Culture
+// CAMPUS LIFE: 9JA UNI SIMULATOR MASTER ENGINE
+// Full Story Progression (100L to 400L), Real Mapped Locations,
+// Housing & Rent, 6-Stat Needs, and Campus Encounters
 // ==========================================
 
-// Sound Effects Synthesizer using Web Audio API (Zero external audio dependency)
 class SoundFX {
-  constructor() {
-    this.ctx = null;
-  }
-
+  constructor() { this.ctx = null; }
   init() {
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx();
     }
   }
-
   playCash() {
     this.init();
     if (!this.ctx) return;
@@ -32,7 +28,6 @@ class SoundFX {
     osc.start(now);
     osc.stop(now + 0.25);
   }
-
   playNotification() {
     this.init();
     if (!this.ctx) return;
@@ -41,7 +36,7 @@ class SoundFX {
     const gain = this.ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(600, now);
-    osc.frequency.setValueAtTime(900, now + 0.08);
+    osc.frequency.setValueAtTime(950, now + 0.08);
     gain.gain.setValueAtTime(0.15, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
     osc.connect(gain);
@@ -49,7 +44,6 @@ class SoundFX {
     osc.start(now);
     osc.stop(now + 0.2);
   }
-
   playAlert() {
     this.init();
     if (!this.ctx) return;
@@ -57,7 +51,7 @@ class SoundFX {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.setValueAtTime(320, now);
     osc.frequency.linearRampToValueAtTime(180, now + 0.3);
     gain.gain.setValueAtTime(0.2, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
@@ -70,7 +64,7 @@ class SoundFX {
 
 const sfx = new SoundFX();
 
-// Core Campus Data
+// Real Mapped University Landmarks
 const UNIVERSITIES = {
   unilorin: {
     name: "University of Ilorin",
@@ -78,11 +72,16 @@ const UNIVERSITIES = {
     motto: "Better By Far",
     city: "Ilorin, Kwara State",
     locations: [
-      { id: "tanke", name: "Tanke Junction", tag: "Off-Campus Hub", desc: "Commercial hub packed with Keke queues, student food joints, POS stands, and Tanke hold-up." },
-      { id: "ps_walkway", name: "PS Walkway & Park", tag: "Campus Life", desc: "The legendary long trek. Dress code marshalls waiting to check your trousers and hair." },
-      { id: "cbt_centre", name: "CBT Centre", tag: "Exam Arena", desc: "The valley of tears. Fingerprint scanners, nervous students praying, and 8 AM test tension." },
-      { id: "sanrab", name: "Sanrab Hostel Zone", tag: "Student Ghetto", desc: "Popular student living area. Generators humming, music blasting, and aroma of roasted noodles." },
-      { id: "dam", name: "Unilorin Dam & Zoo", tag: "Chilling Spot", desc: "Cool serene breeze, couple hideout, and relaxation away from toxic lecturers." }
+      { id: "tanke", name: "Tanke Junction & Oke-Odo", tag: "Off-Campus Hub", icon: "🚕", desc: "Commercial hub packed with Keke queues, Tanke Amala joints, supermarkets, and morning hold-up." },
+      { id: "sanrab", name: "Sanrab Hostel Zone", tag: "Student Ghetto", icon: "🏘️", desc: "Prime off-campus living area. Generators humming, barbers, laundry lines, and late-night indomie aroma." },
+      { id: "main_gate", name: "Main Gate & Security Post", tag: "Screening Point", icon: "🚧", desc: "Strict Dress Code Marshalls inspecting students' trousers, hairstyles, and ID cards before entry." },
+      { id: "ps_walkway", name: "The Walkway & Flyover", tag: "Campus Catwalk", icon: "🚶", desc: "The legendary sheltered walkway. Fashion showcase, political flyers, and the long trek between faculties." },
+      { id: "cbt_centre", name: "Permanent Site CBT Centre", tag: "Exam Arena", icon: "💻", desc: "Halls 1 to 5. Biometric thumbprint scanners, nervous students praying, and 8 AM test tension." },
+      { id: "faculty_science", name: "Faculty of Science & NLT", tag: "Lecture Halls", icon: "🔬", desc: "500-capacity New Lecture Theatre. Crowded general courses, lab practicals, and 7 AM seat rushing." },
+      { id: "senate", name: "Senate Building Complex", tag: "Admin Power", icon: "🏛️", desc: "Imposing administrative tower, Vice Chancellor's office, matriculation ground, and bursary." },
+      { id: "dam", name: "Unilorin Dam & Biological Gardens", tag: "Scenic Dates", icon: "🌊", desc: "Cool serene waters, monkeys at the zoo, couple hideouts, and peaceful escape from toxic lecturers." },
+      { id: "school_park", name: "School Park Terminal", tag: "Transit Hub", icon: "🚌", desc: "Coaster buses loading students to Post Office, Challenge, and Tanke. Intense rush-hour struggle." },
+      { id: "clinic", name: "University Health Services", tag: "Clinic Bay", icon: "🏥", desc: "Campus hospital. Sick bay beds, long queues for medical clearance, and paracetamol prescriptions." }
     ]
   },
   unilag: {
@@ -91,197 +90,92 @@ const UNIVERSITIES = {
     motto: "In Deed and In Truth",
     city: "Akoka, Lagos State",
     locations: [
-      { id: "new_hall", name: "New Hall & Moremi", tag: "Campus Core", desc: "Heartbeat of Unilag. Fashion show on walkway, Indomie spots, late night chatter." },
-      { id: "lagoon_front", name: "Lagoon Front", tag: "Romantic Breeze", desc: "Serene waters of Lagos lagoon. Lovers holding hands, study groups, evening breeze." },
-      { id: "akoka_gate", name: "Akoka Main Gate", tag: "City Border", desc: "Cab rush, security checks, Yellow buses heading to Yaba, vibrant street hustle." },
-      { id: "cits", name: "CITS & Library", tag: "Tech & Reading", desc: "Free AC, quiet reading desks, and students secretly charging laptops and powerbanks." },
-      { id: "amphi", name: "Amphitheatre", tag: "Events & Rallies", desc: "SUG manifestos, campus rap battles, fellowship praise nights, and theatre rehearsals." }
+      { id: "akoka_gate", name: "Akoka Main Gate", tag: "City Border", icon: "🚖", desc: "Yellow Danfo buses from Yaba, campus cabs, security checks, and street food vendors." },
+      { id: "new_hall", name: "New Hall Quadrangle", tag: "Campus Core", icon: "🌆", desc: "Heartbeat of Unilag nightlife. King Jaja, Moremi hall fashion catwalk, Shawarma and suya spots." },
+      { id: "lagoon_front", name: "Lagoon Front & Senate", tag: "Romantic Breeze", icon: "🌊", desc: "Serene breeze from Lagos lagoon. Lovers on manicured lawns, study groups, iconic photo spot." },
+      { id: "faculty_law", name: "Faculty of Law & Arts", tag: "Moot Court", icon: "⚖️", desc: "Corporate dress code, students in black & white, intellectual arguments, and faculty library." },
+      { id: "cits", name: "CITS Tech Centre & Library", tag: "Tech & Reading", icon: "💻", desc: "Air-conditioned labs, free Wi-Fi, coding students, and quiet research desks." },
+      { id: "amphi", name: "Main Auditorium & Amphitheatre", tag: "Event Stage", icon: "🎭", desc: "SUG election manifestos, comedy shows, campus concerts, fellowship night vigils." },
+      { id: "engineering", name: "Faculty of Engineering Labs", tag: "Sleepless Hub", icon: "⚙️", desc: "Heavy machinery workshops, late-night CAD drawings, and exhausted engineering students." },
+      { id: "health_centre", name: "Unilag Health Centre", tag: "Medical Bay", icon: "🏥", desc: "Student clinic near Jaja Hall for medical excuses, sick tests, and emergency relief." }
     ]
   }
 };
 
-// 100+ Authentic Nigerian Random Events
-const CAMPUS_EVENTS = [
-  {
-    id: "dress_code_marshall",
-    uni: "unilorin",
-    title: "⚠️ Dress Code Marshall Caught You!",
-    desc: "A stern lecturer and security man stop you on the Walkway. They claim your jeans are 'fitted' and your hair is 'unchristian/unislamic'. What do you do?",
-    options: [
-      {
-        text: "Apologize and beg with respect ('Good morning sir, I won't wear it again')",
-        outcome: (p) => {
-          p.energy -= 10;
-          return { msg: "The marshall waved you through with a strict warning. You survived, but lost 10 Energy from trembling.", type: "neutral" };
-        }
-      },
-      {
-        text: "Quote the student handbook and argue your fundamental human rights",
-        outcome: (p) => {
-          p.clout += 15;
-          p.cgpa = Math.max(0, p.cgpa - 0.2);
-          return { msg: "Huge crowd gathered and cheered! (+15 Clout). But the marshall wrote your matric number. (-0.20 CGPA penalty!).", type: "negative" };
-        }
-      },
-      {
-        text: "Make an emergency U-turn and take a Keke back to Tanke",
-        outcome: (p) => {
-          p.cash -= 400;
-          p.energy -= 15;
-          return { msg: "You escaped without trouble but spent ₦400 Keke fare and arrived late.", type: "neutral" };
-        }
-      }
-    ]
+// Player Housing Tiers
+const HOUSING_TIERS = {
+  squatter: {
+    id: "squatter",
+    name: "Hostel Squatter Bunk",
+    rentCost: 0,
+    roomType: "8 guys in 1 room (Village / New Hall)",
+    desc: "Sleeping on a thin mattress on the floor or sharing a bunk with coursemate. Zero privacy.",
+    perks: "Free accommodation. High risk of boiling ring raids and missing food."
   },
-  {
-    id: "boiling_ring_raid",
-    title: "⚡ Hostel Porter Raids Your Room!",
-    desc: "At 10:30 PM, heavy knocks rattle your hostel door. Hall Porters are conducting a surprise search for contraband electrical appliances (boiling rings & hotplates)!",
-    options: [
-      {
-        text: "Quickly hide the boiling ring inside your roommate's dirty laundry basket",
-        outcome: (p) => {
-          if (Math.random() > 0.35) {
-            return { msg: "Success! The porters searched and found nothing. Room celebrated with midnight garri!", type: "positive" };
-          } else {
-            p.cash -= 5000;
-            return { msg: "Busted! They seized your ring and slammed you with a ₦5,000 disciplinary fine.", type: "negative" };
-          }
-        }
-      },
-      {
-        text: "Offer the Chief Porter ₦2,000 for 'recharge card and pure water'",
-        outcome: (p) => {
-          if (p.cash >= 2000) {
-            p.cash -= 2000;
-            return { msg: "The porter smiled, pocketed the ₦2,000, and shouted 'Room cleared!'", type: "positive" };
-          } else {
-            return { msg: "You don't have enough cash! The appliance was confiscated.", type: "negative" };
-          }
-        }
-      }
-    ]
+  school_hostel: {
+    id: "school_hostel",
+    name: "Official School Hostel Bedspace",
+    rentCost: 45000,
+    roomType: "4-Man Hostel Room",
+    desc: "Balloted hostel room on campus. Close to 8 AM lectures, but water and light fluctuate.",
+    perks: "Trek to class in 5 minutes. Shared bathroom and hall porter rules."
   },
-  {
-    id: "surprise_test",
-    title: "🚨 Surprise Continuous Assessment Test!",
-    desc: "You walked into the lecture hall and the lecturer locked the doors! He announces an impromptu 20-mark test on Chapter 4.",
-    options: [
-      {
-        text: "Write with pure faith and student intuition",
-        outcome: (p) => {
-          const boost = (p.cgpa > 3.0) ? 0.08 : -0.1;
-          p.cgpa = Math.min(5.0, Math.max(0, p.cgpa + boost));
-          p.energy -= 15;
-          return { msg: boost > 0 ? "Your past reading saved you! Scored 16/20 on the test." : "Total disaster. Scored 4/20. CGPA dropped slightly.", type: boost > 0 ? "positive" : "negative" };
-        }
-      },
-      {
-        text: "Whisper and peep from the brilliant student sitting next to you",
-        outcome: (p) => {
-          if (Math.random() > 0.4) {
-            p.cgpa = Math.min(5.0, p.cgpa + 0.12);
-            return { msg: "Copy and paste success! You secured an easy 18/20.", type: "positive" };
-          } else {
-            p.cgpa = Math.max(0, p.cgpa - 0.25);
-            return { msg: "Lecturer spotted your neck turning! Paper torn on the spot. 0/20!", type: "negative" };
-          }
-        }
-      }
-    ]
+  self_contain: {
+    id: "self_contain",
+    name: "Self-Contained Flat (Sanrab / Yaba)",
+    rentCost: 180000,
+    roomType: "Personal Room + Kitchen & Bathroom",
+    desc: "Private off-campus sanctuary. You control your space, have your own generator and gas cooker.",
+    perks: "Private bathroom (+Hygiene boost), host friends anytime, pay NEPA bill share."
   },
-  {
-    id: "roommate_chicken_thief",
-    title: "🍗 Mystery of the Missing Chicken!",
-    desc: "You returned from night class salivating over the fried chicken you left inside your soup pot. It is GONE. Your roommate is chewing toothpick with innocent eyes.",
-    options: [
-      {
-        text: "Confront him aggressively and demand your ₦2,500 chicken money",
-        outcome: (p) => {
-          p.energy -= 20;
-          p.clout += 5;
-          return { msg: "Loud argument shook the hostel! He denied it, but everyone in block knows he did it.", type: "neutral" };
-        }
-      },
-      {
-        text: "Drink garri in sorrow and charge it to campus experience",
-        outcome: (p) => {
-          p.hunger = Math.min(100, p.hunger + 20);
-          p.energy -= 5;
-          return { msg: "You soaked ice-cold garri with groundnut. Painful, but peaceful night.", type: "neutral" };
-        }
-      }
-    ]
-  },
-  {
-    id: "yahoo_boy_parade",
-    title: "💸 Benz Boy Roommate Got Paid!",
-    desc: "Your compound mate who does crypto & tech deals just closed a big transaction. He walked in with 5 packs of Chicken Republic and cartons of energy drinks!",
-    options: [
-      {
-        text: "Hype him loudly ('Senior Man! Wire wire! Money stop nonsense!')",
-        outcome: (p) => {
-          p.hunger = 100;
-          p.energy = Math.min(100, p.energy + 30);
-          p.cash += 5000;
-          return { msg: "He blessed you with two boxes of chicken and dashed you ₦5,000 cash!", type: "positive" };
-        }
-      },
-      {
-        text: "Politely advise him to focus on his 8 AM lectures",
-        outcome: (p) => {
-          p.clout -= 10;
-          return { msg: "Everyone in the flat laughed at you. You ate your normal bread in silence.", type: "negative" };
-        }
-      }
-    ]
-  },
-  {
-    id: "tanke_traffic_drama",
-    uni: "unilorin",
-    title: "🚕 Tanke Hold-up Lockdown!",
-    desc: "You boarded a cab heading to PS for a 9 AM exam, but Tanke Junction is completely blocked by Keke napeps and a broken-down tipper truck.",
-    options: [
-      {
-        text: "Drop from the cab, run to the bike park, and pay a premium for express okada",
-        outcome: (p) => {
-          p.cash -= 1200;
-          p.energy -= 20;
-          return { msg: "Okada dodged the gridlock and reached exam hall just as attendance started!", type: "positive" };
-        }
-      },
-      {
-        text: "Stay inside the cab and pray for divine intervention",
-        outcome: (p) => {
-          p.cgpa = Math.max(0, p.cgpa - 0.15);
-          return { msg: "You arrived 45 minutes late! Lecturer refused entry. Missed the quiz.", type: "negative" };
-        }
-      }
-    ]
+  luxury_flat: {
+    id: "luxury_flat",
+    name: "2-Bedroom Luxury Serviced Flat (Tanke Oke / Lekki)",
+    rentCost: 650000,
+    roomType: "Luxury Gated Estate Apartment",
+    desc: "Prestige living for Nepo babies and top ballers. Solar inverter, 24/7 security, tiled parking.",
+    perks: "100% comfort, massive +35 Clout boost, invite crushes for private dinner."
   }
-];
+};
 
-// In-Game Store & Food Items
-const SHOP_ITEMS = [
-  { id: "amala_tanke", name: "Amala + Gbegiri & Ewedu", category: "food", cost: 1800, hunger: 45, energy: 25, desc: "Hot steaming Amala from Tanke with goat meat." },
-  { id: "jollof_chicken", name: "Jollof Rice & Fried Chicken", category: "food", cost: 3200, hunger: 60, energy: 30, desc: "Classic Nigerian party jollof with spicy peppered chicken." },
-  { id: "garri_groundnut", name: "Hostel Garri + Groundnut & Sugar", category: "food", cost: 500, hunger: 25, energy: 10, desc: "Student life-saver. Cold water garri soaking." },
-  { id: "monster_energy", name: "Ice Cold Energy Drink", category: "food", cost: 1200, hunger: 5, energy: 50, desc: "Fuel for TDB night reading sessions." },
-  { id: "past_questions", name: "Departmental Past Questions (PQ)", category: "academic", cost: 3500, cgpaBoost: 0.15, desc: "Compiled 10-year past questions with answers." },
-  { id: "powerbank_oraimo", name: "Oraimo 20,000mAh Powerbank", category: "gear", cost: 18000, perk: "Never get low battery during blackout", desc: "Essential survival gadget for campus hostels." },
-  { id: "designer_drip", name: "Campus Drip: Native + Loafers", category: "fashion", cost: 45000, cloutBoost: 30, desc: "Turn heads on the walkway. Instant respect from coursemates." }
-];
+// Vehicles & Mobility Tiers
+const VEHICLE_TIERS = {
+  trek: { id: "trek", name: "Leggedis Benz (Trekking in Sun)", cost: 0, speed: 1, energyCost: 20, clout: 0 },
+  keke: { id: "keke", name: "Campus Keke & Shuttles", cost: 500, speed: 2, energyCost: 10, clout: 5 },
+  okada: { id: "okada", name: "Commercial Motorcycle (Okada)", cost: 1500, speed: 3, energyCost: 5, clout: 10 },
+  corolla: { id: "corolla", name: "Toyota Corolla 'Muscle'", cost: 2800000, speed: 4, energyCost: 0, clout: 35 },
+  benz: { id: "benz", name: "Mercedes Benz C300 / Lexus ES350", cost: 8500000, speed: 5, energyCost: 0, clout: 60 }
+};
 
-// Campus Side Gigs / Hustles
-const CAMPUS_JOBS = [
-  { id: "assignment_writer", name: "Assignment & Term Paper Writer", payout: 12000, energyCost: 30, reqCgpa: 3.5, desc: "Write assignments for rich coursemates who skipped classes." },
-  { id: "pos_agent", name: "Hostel POS Cash Agent", payout: 8500, energyCost: 20, reqCgpa: 0, desc: "Disburse cash at night when school ATMs are out of service." },
-  { id: "okrika_vendor", name: "Thrift & Vintage Cloth Vendor", payout: 15000, energyCost: 25, reqCgpa: 0, desc: "Sell curated thrift jackets and jeans in hostel rooms." },
-  { id: "hair_braider", name: "Campus Hair Stylist / Barber", payout: 10000, energyCost: 25, reqCgpa: 0, desc: "Cut hair or braid wigs for students getting ready for weekend groove." },
-  { id: "crypto_futures", name: "Crypto Futures Scalping (High Risk)", payoutMin: -25000, payoutMax: 60000, energyCost: 35, reqCgpa: 0, desc: "Trade 50x leverage on Telegram. You either make ₦60k or get liquidated!" }
-];
+// Story Chapters by Academic Level
+const STORY_CHAPTERS = {
+  "100L": {
+    year: 1,
+    title: "The Jambite Fresher Experience",
+    milestoneEvent: "Matriculation Ceremony",
+    desc: "Fresh from secondary school. Overwhelmed by lecture queues, 8 AM CBT halls, and hostel politics."
+  },
+  "200L": {
+    year: 2,
+    title: "Departmental Deep Waters",
+    milestoneEvent: "First True Campus Love & Serious Tests",
+    desc: "No longer a novice. Tough 3-unit courses, off-campus hostel search, and deciding your campus clique."
+  },
+  "300L": {
+    year: 3,
+    title: "SIWES Internship & SUG Politics",
+    milestoneEvent: "6-Month Industrial Training & Student Politics",
+    desc: "Internship grind in Lagos or Ilorin. Departmental elections, hustle boom or bust, and adulthood pressure."
+  },
+  "400L": {
+    year: 4,
+    title: "Final Year: Project, Sign-Out & Glory",
+    milestoneEvent: "Final Year Project Defense & Convocation",
+    desc: "Project supervisor wahala, white T-shirt signing, degree clearance, and step into the real world!"
+  }
+};
 
-// Main Game State Manager
+// Master Game State Manager
 class GameState {
   constructor() {
     this.profile = {
@@ -290,35 +184,48 @@ class GameState {
       university: "unilorin", // unilorin or unilag
       spawnClass: "trench",   // nepo, trench, scholar
       department: "Computer Science",
-      level: "200L"
+      level: "100L",
+      avatar: { skin: "caramel", hair: "fade", outfit: "street", accessory: "shades" }
     };
 
+    // 6-Need Stat Engine
     this.stats = {
-      energy: 85,
-      hunger: 70,
-      cgpa: 3.42,
-      clout: 25,
-      cash: 12000,
-      debt: 0
+      energy: 85,    // 0 - 100
+      hunger: 70,    // 0 - 100
+      hygiene: 80,   // 0 - 100
+      fun: 65,       // 0 - 100
+      health: 95,    // 0 - 100
+      cgpa: 3.45     // 0.00 - 5.00
     };
+
+    this.finances = {
+      cash: 12000,
+      debt: 0,
+      rentDueInDays: 30
+    };
+
+    this.housing = "squatter";
+    this.vehicle = "trek";
+    this.inventory = ["Student ID Card", "Bic Pen"];
+    this.roomFurniture = [];
 
     this.time = {
-      day: 14,
+      day: 1,
       hour: 8,
-      minute: 30,
-      semesterWeek: 6
+      minute: 0,
+      semesterWeek: 1,
+      level: "100L"
     };
 
     this.currentLocationId = "tanke";
-    this.inventory = [];
     this.activityLog = [];
     this.activeEvent = null;
 
     this.chitterFeed = [
-      { author: "@unilorin_crushes", time: "10m ago", text: "Who is that tall guy on Walkway wearing blue vintage shirt? Respectfully, check your DM! 👀" },
-      { author: "@tanke_insider", time: "25m ago", text: "Hold up at Tanke gate is serious today. Keke drivers are on strike again. Trek for life! 😭🚶" },
-      { author: "@campus_gist9ja", time: "1h ago", text: "Lecturer gave surprise test at 8:01 AM and locked the doors at 8:05 AM. Fear who no fear Nigerian uni! 💀" },
-      { author: "@unilag_slayers", time: "2h ago", text: "Lagoon Front breeze after a hectic 4-unit course is unmatched. Catch me at New Hall later." }
+      { author: "@tanke_insider", time: "5m ago", text: "Hold-up from Tipper garage to Tanke junction is wicked today. Enter bike if you have 8 AM test! 😭" },
+      { author: "@unilorin_crushes", time: "18m ago", text: "Who was that guy in black senator at CBT Centre Hall 2? Your perfume almost made me forget my matric number! 👀🔥" },
+      { author: "@unilag_slayers", time: "42m ago", text: "Lagoon Front evening breeze with cold stone ice cream cures all 4-unit course depression. 🌊🍦" },
+      { author: "@campus_gist9ja", time: "1h ago", text: "Hostel porter caught 14 boiling rings during midnight search in Block D. Be careful out there! ⚡💀" }
     ];
 
     this.loadGame();
@@ -331,26 +238,39 @@ class GameState {
       university: spawnData.university || "unilorin",
       spawnClass: spawnData.spawnClass || "trench",
       department: spawnData.department || "Computer Science",
-      level: "100L"
+      level: "100L",
+      avatar: spawnData.avatar || { skin: "caramel", hair: "fade", outfit: "street", accessory: "shades" }
     };
 
     if (this.profile.spawnClass === "nepo") {
-      this.stats = { energy: 100, hunger: 90, cgpa: 3.20, clout: 65, cash: 850000, debt: 0 };
+      this.stats = { energy: 100, hunger: 90, hygiene: 100, fun: 80, health: 100, cgpa: 3.20 };
+      this.finances = { cash: 850000, debt: 0, rentDueInDays: 60 };
+      this.housing = "luxury_flat";
+      this.vehicle = "corolla";
       this.currentLocationId = this.profile.university === "unilorin" ? "tanke" : "new_hall";
-      this.inventory = ["iPhone 16 Pro Max", "Luxury Off-Campus Flat"];
+      this.inventory = ["iPhone 16 Pro Max", "Designer Sunglasses", "Perfume Oil"];
+      this.roomFurniture = ["Air Conditioner", "Solar Inverter", "PlayStation 5"];
     } else if (this.profile.spawnClass === "scholar") {
-      this.stats = { energy: 80, hunger: 60, cgpa: 4.88, clout: 20, cash: 35000, debt: 0 };
+      this.stats = { energy: 85, hunger: 65, hygiene: 85, fun: 45, health: 95, cgpa: 4.88 };
+      this.finances = { cash: 35000, debt: 0, rentDueInDays: 30 };
+      this.housing = "school_hostel";
+      this.vehicle = "trek";
       this.currentLocationId = this.profile.university === "unilorin" ? "ps_walkway" : "cits";
-      this.inventory = ["Nokia Phone", "Textbooks & Handouts"];
+      this.inventory = ["Nokia Torch Phone", "10-Year Past Questions", "Reading Glasses"];
+      this.roomFurniture = ["Rechargeable Reading Lamp", "Book Shelf"];
     } else {
-      // Trench / Lapo
-      this.stats = { energy: 90, hunger: 50, cgpa: 3.10, clout: 15, cash: 4500, debt: 0 };
+      // Trench Grinder
+      this.stats = { energy: 90, hunger: 50, hygiene: 70, fun: 40, health: 90, cgpa: 3.10 };
+      this.finances = { cash: 4500, debt: 0, rentDueInDays: 14 };
+      this.housing = "squatter";
+      this.vehicle = "trek";
       this.currentLocationId = this.profile.university === "unilorin" ? "sanrab" : "new_hall";
-      this.inventory = ["Cracked Android Phone", "Hostel Bedspace (Squatting)"];
+      this.inventory = ["Cracked Android Phone", "Boiling Ring", "Plastic Bucket"];
+      this.roomFurniture = ["Foam Mattress on Floor"];
     }
 
-    this.time = { day: 1, hour: 7, minute: 30, semesterWeek: 1 };
-    this.activityLog = [{ text: `Welcome to ${UNIVERSITIES[this.profile.university].name}! Your campus adventure begins now.`, type: "positive" }];
+    this.time = { day: 1, hour: 7, minute: 30, semesterWeek: 1, level: "100L" };
+    this.activityLog = [{ text: `Admitted into ${UNIVERSITIES[this.profile.university].name}! 100L Fresher journey begins.`, type: "positive" }];
     this.saveGame();
   }
 
@@ -359,9 +279,13 @@ class GameState {
       const data = {
         profile: this.profile,
         stats: this.stats,
+        finances: this.finances,
+        housing: this.housing,
+        vehicle: this.vehicle,
+        inventory: this.inventory,
+        roomFurniture: this.roomFurniture,
         time: this.time,
         currentLocationId: this.currentLocationId,
-        inventory: this.inventory,
         activityLog: this.activityLog.slice(0, 20)
       };
       localStorage.setItem("campus_life_save", JSON.stringify(data));
@@ -378,9 +302,13 @@ class GameState {
         const parsed = JSON.parse(saved);
         this.profile = parsed.profile || this.profile;
         this.stats = parsed.stats || this.stats;
+        this.finances = parsed.finances || this.finances;
+        this.housing = parsed.housing || this.housing;
+        this.vehicle = parsed.vehicle || this.vehicle;
+        this.inventory = parsed.inventory || this.inventory;
+        this.roomFurniture = parsed.roomFurniture || this.roomFurniture;
         this.time = parsed.time || this.time;
         this.currentLocationId = parsed.currentLocationId || this.currentLocationId;
-        this.inventory = parsed.inventory || this.inventory;
         this.activityLog = parsed.activityLog || this.activityLog;
         return true;
       }
@@ -393,22 +321,93 @@ class GameState {
     while (this.time.minute >= 60) {
       this.time.minute -= 60;
       this.time.hour += 1;
-      // Slight natural hunger & energy decay per hour
-      this.stats.hunger = Math.max(0, this.stats.hunger - 4);
-      this.stats.energy = Math.max(0, this.stats.energy - 3);
+      
+      // Hourly subtle needs decay
+      this.stats.hunger = Math.max(0, this.stats.hunger - 3);
+      this.stats.energy = Math.max(0, this.stats.energy - 2);
+      this.stats.hygiene = Math.max(0, this.stats.hygiene - 2);
+      this.stats.fun = Math.max(0, this.stats.fun - 2);
+
+      // Health drops if starving or exhausted
+      if (this.stats.hunger === 0 || this.stats.energy === 0) {
+        this.stats.health = Math.max(0, this.stats.health - 5);
+      }
     }
 
     if (this.time.hour >= 24) {
       this.time.hour -= 24;
       this.time.day += 1;
+      this.finances.rentDueInDays = Math.max(0, this.finances.rentDueInDays - 1);
+
       if (this.time.day % 7 === 0) {
         this.time.semesterWeek += 1;
-        this.addLog(`Week ${this.time.semesterWeek} of the semester has begun. Mid-semester tests approach!`, "special");
+        this.checkSemesterMilestones();
       }
     }
 
     this.saveGame();
     this.rollRandomEventChance();
+  }
+
+  checkSemesterMilestones() {
+    // 15 weeks per semester; at week 15, exams happen!
+    if (this.time.semesterWeek === 15) {
+      this.triggerSemesterExamWeek();
+    }
+  }
+
+  triggerSemesterExamWeek() {
+    let outcomeScore = (this.stats.cgpa * 0.7) + (this.stats.health * 0.15) + (this.stats.energy * 0.15);
+    let delta = 0;
+    if (outcomeScore > 65) {
+      delta = 0.15;
+      this.addLog(`🎉 Exam Week Concluded! Your dedication paid off. CGPA boosted (+0.15)!`, "positive");
+    } else {
+      delta = -0.20;
+      this.addLog(`⚠️ Exam Week Disaster! Exhaustion and poor prep took a toll. CGPA dropped (-0.20).`, "negative");
+    }
+    this.stats.cgpa = Math.min(5.0, Math.max(0.5, +(this.stats.cgpa + delta).toFixed(2)));
+
+    // Progress Academic Level
+    if (this.time.level === "100L") {
+      this.time.level = "200L";
+      this.profile.level = "200L";
+      this.addLog(`🎓 Congratulations! Passed 100L. You are now officially a 200 Level Student!`, "special");
+    } else if (this.time.level === "200L") {
+      this.time.level = "300L";
+      this.profile.level = "300L";
+      this.addLog(`🚀 200L Complete! Welcome to 300 Level. SIWES / IT Internship commences.`, "special");
+    } else if (this.time.level === "300L") {
+      this.time.level = "400L";
+      this.profile.level = "400L";
+      this.addLog(`🏆 Final Year! You made it to 400L. Final Project & Sign-Out awaits!`, "special");
+    } else if (this.time.level === "400L") {
+      this.triggerGraduationCeremony();
+    }
+
+    this.time.semesterWeek = 1;
+    this.saveGame();
+  }
+
+  triggerGraduationCeremony() {
+    let grade = "Third Class";
+    if (this.stats.cgpa >= 4.5) grade = "First Class Honours (Distinction 🏆)";
+    else if (this.stats.cgpa >= 3.5) grade = "Second Class Upper (2:1)";
+    else if (this.stats.cgpa >= 2.4) grade = "Second Class Lower (2:2)";
+
+    this.activeEvent = {
+      title: "🎓 Convocation & Degree Sign-Out!",
+      desc: `You have completed your 4-year degree at ${UNIVERSITIES[this.profile.university].name}! Your final CGPA is ${this.stats.cgpa.toFixed(2)} (${grade}). You survived the lectures, tests, landlord wahala, and Keke queues!`,
+      options: [
+        {
+          text: "Wear your convocation gown, celebrate with parents and coursemates!",
+          outcome: (p) => {
+            return { msg: `Graduated with ${grade}! Your campus story is immortalized.`, type: "positive" };
+          }
+        }
+      ]
+    };
+    sfx.playCash();
   }
 
   getTimePhase() {
@@ -420,8 +419,8 @@ class GameState {
   }
 
   addLog(text, type = "neutral") {
-    this.activityLog.unshift({ text, type, time: `${this.formatTime()}` });
-    if (this.activityLog.length > 25) this.activityLog.pop();
+    this.activityLog.unshift({ text, type, time: this.formatTime() });
+    if (this.activityLog.length > 30) this.activityLog.pop();
     this.saveGame();
   }
 
@@ -436,7 +435,6 @@ class GameState {
   }
 
   rollRandomEventChance() {
-    // 25% chance of encountering drama when advancing time
     if (Math.random() < 0.28 && !this.activeEvent) {
       const eligible = CAMPUS_EVENTS.filter(e => !e.uni || e.uni === this.profile.university);
       const chosen = eligible[Math.floor(Math.random() * eligible.length)];
@@ -445,79 +443,136 @@ class GameState {
     }
   }
 
-  // Common Action Handlers
+  // Room & House Actions
+  takeShower() {
+    this.stats.hygiene = 100;
+    this.stats.energy = Math.min(100, this.stats.energy + 10);
+    this.advanceTime(25);
+    this.addLog("Took a refreshing shower with cold water. Hygiene restored to 100% 🚿", "positive");
+    sfx.playNotification();
+  }
+
+  sleepInRoom() {
+    this.stats.energy = 100;
+    this.stats.hunger = Math.max(0, this.stats.hunger - 20);
+    this.time.hour = 7;
+    this.time.minute = 0;
+    this.time.day += 1;
+    this.addLog("Slept peacefully on your bed. Woke up fresh at 7:00 AM (Energy 100% ⚡)", "positive");
+    sfx.playNotification();
+    this.saveGame();
+  }
+
+  cookConcoctionRice() {
+    if (this.finances.cash < 800) {
+      this.addLog("Not enough cash for rice, maggi, and pepper (Need ₦800)", "negative");
+      return;
+    }
+    this.finances.cash -= 800;
+    this.stats.hunger = Math.min(100, this.stats.hunger + 55);
+    this.advanceTime(45);
+    this.addLog("Cooked hot concoction rice in hostel pot. Hunger satisfied (+55 🍔)", "positive");
+    sfx.playNotification();
+  }
+
+  // Campus Core Actions
   attendLecture() {
     if (this.stats.energy < 20) {
-      this.addLog("Too exhausted to attend lecture! You fell asleep on the hostel bunk.", "negative");
+      this.addLog("Too weak to attend lecture! You fell asleep on the hostel bunk.", "negative");
       sfx.playAlert();
       return;
     }
     this.stats.energy -= 20;
     this.stats.hunger = Math.max(0, this.stats.hunger - 15);
+    this.stats.hygiene = Math.max(0, this.stats.hygiene - 10);
     this.stats.cgpa = Math.min(5.0, +(this.stats.cgpa + 0.08).toFixed(2));
     this.advanceTime(120);
-    this.addLog("Attended 2-hour general lecture. Marked attendance and took comprehensive notes. (+0.08 CGPA)", "positive");
+    this.addLog("Attended 2-hour lecture. Marked attendance and took class notes (+0.08 CGPA 📚)", "positive");
     sfx.playNotification();
   }
 
   readNightClass() {
     if (this.stats.energy < 35) {
-      this.addLog("Not enough energy for TDB (Till Day Break)! Rest first.", "negative");
+      this.addLog("Not enough energy for TDB night reading! Take a nap first.", "negative");
       sfx.playAlert();
       return;
     }
     this.stats.energy -= 35;
     this.stats.hunger = Math.max(0, this.stats.hunger - 20);
+    this.stats.hygiene = Math.max(0, this.stats.hygiene - 15);
     this.stats.cgpa = Math.min(5.0, +(this.stats.cgpa + 0.22).toFixed(2));
     this.advanceTime(300);
-    this.addLog("Read TDB at campus lecture hall overnight. Solved 5 years of past questions! (+0.22 CGPA)", "positive");
+    this.addLog("Read TDB overnight at campus lecture hall. Solved past questions (+0.22 CGPA 📚)", "positive");
     sfx.playNotification();
   }
 
-  takeNap() {
-    this.stats.energy = Math.min(100, this.stats.energy + 45);
-    this.advanceTime(180);
-    this.addLog("Took a refreshing 3-hour afternoon hostel nap. Energy restored (+45 ⚡).", "positive");
+  visitClinic() {
+    this.stats.health = 100;
+    this.finances.cash = Math.max(0, this.finances.cash - 1500);
+    this.advanceTime(90);
+    this.addLog("Visited university clinic. Received treatment & rest. Health restored to 100% 💊", "positive");
     sfx.playNotification();
   }
 
-  sleepFullNight() {
-    this.stats.energy = 100;
-    this.stats.hunger = Math.max(0, this.stats.hunger - 25);
-    this.time.hour = 7;
-    this.time.minute = 0;
-    this.time.day += 1;
-    this.addLog("Woke up fresh at 7:00 AM ready for the new campus day. (Energy 100% ⚡)", "positive");
+  partyNight() {
+    if (this.finances.cash < 8000) {
+      this.addLog("Need at least ₦8,000 for club entry, drinks, and late-night cab!", "negative");
+      sfx.playAlert();
+      return;
+    }
+    this.finances.cash -= 8000;
+    this.stats.energy = Math.max(0, this.stats.energy - 35);
+    this.stats.fun = 100;
+    this.advanceTime(240);
+    this.addLog("Partied all night with campus ballers! Fun 100% 🎉", "positive");
+    sfx.playCash();
+  }
+
+  // Travel between Locations
+  travelTo(locationId) {
+    const uni = UNIVERSITIES[this.profile.university];
+    const loc = uni.locations.find(l => l.id === locationId);
+    if (!loc) return;
+
+    const v = VEHICLE_TIERS[this.vehicle] || VEHICLE_TIERS.trek;
+    this.stats.energy = Math.max(0, this.stats.energy - v.energyCost);
+    this.currentLocationId = locationId;
+    this.advanceTime(20);
+    this.addLog(`Arrived at ${loc.name} via ${v.name}.`, "positive");
     sfx.playNotification();
     this.saveGame();
   }
 
-  partyNight() {
-    if (this.stats.cash < 8000) {
-      this.addLog("Not enough cash for night club entry and drinks! (Need at least ₦8,000)", "negative");
+  // Housing Upgrade
+  upgradeHousing(tierKey) {
+    const tier = HOUSING_TIERS[tierKey];
+    if (!tier) return;
+    if (this.finances.cash < tier.rentCost) {
+      this.addLog(`Insufficient funds for ${tier.name}! (Need ${this.formatMoney(tier.rentCost)})`, "negative");
       sfx.playAlert();
       return;
     }
-    this.stats.cash -= 8000;
-    this.stats.energy = Math.max(0, this.stats.energy - 35);
-    this.stats.clout = Math.min(100, this.stats.clout + 20);
-    this.advanceTime(240);
-    this.addLog("Grooved all night at campus party! Gained massive campus clout (+20 🔥).", "positive");
+    this.finances.cash -= tier.rentCost;
+    this.housing = tierKey;
+    this.finances.rentDueInDays = 60;
+    this.addLog(`Moved into ${tier.name}! Your campus comfort has reached a new level.`, "special");
     sfx.playCash();
+    this.saveGame();
   }
 
   buyShopItem(item) {
-    if (this.stats.cash < item.cost) {
+    if (this.finances.cash < item.cost) {
       this.addLog(`Insufficient funds for ${item.name}! (Cost: ${this.formatMoney(item.cost)})`, "negative");
       sfx.playAlert();
       return false;
     }
 
-    this.stats.cash -= item.cost;
+    this.finances.cash -= item.cost;
     if (item.hunger) this.stats.hunger = Math.min(100, this.stats.hunger + item.hunger);
     if (item.energy) this.stats.energy = Math.min(100, this.stats.energy + item.energy);
+    if (item.hygiene) this.stats.hygiene = Math.min(100, this.stats.hygiene + item.hygiene);
+    if (item.fun) this.stats.fun = Math.min(100, this.stats.fun + item.fun);
     if (item.cgpaBoost) this.stats.cgpa = Math.min(5.0, +(this.stats.cgpa + item.cgpaBoost).toFixed(2));
-    if (item.cloutBoost) this.stats.clout = Math.min(100, this.stats.clout + item.cloutBoost);
 
     if (item.category !== "food") {
       this.inventory.push(item.name);
@@ -531,7 +586,7 @@ class GameState {
 
   doCampusHustle(job) {
     if (this.stats.energy < job.energyCost) {
-      this.addLog(`Too exhausted to work ${job.name}! Need ${job.energyCost} Energy.`, "negative");
+      this.addLog(`Too exhausted to work ${job.name}! Need ${job.energyCost} Energy ⚡.`, "negative");
       sfx.playAlert();
       return;
     }
@@ -544,12 +599,12 @@ class GameState {
       earned = Math.floor(Math.random() * (job.payoutMax - job.payoutMin + 1)) + job.payoutMin;
     }
 
-    this.stats.cash = Math.max(0, this.stats.cash + earned);
+    this.finances.cash = Math.max(0, this.finances.cash + earned);
     if (earned >= 0) {
       this.addLog(`Worked ${job.name} and earned ${this.formatMoney(earned)}!`, "positive");
       sfx.playCash();
     } else {
-      this.addLog(`Crypto trade liquidated! Lost ${this.formatMoney(Math.abs(earned))}. Student breakfast! 📉`, "negative");
+      this.addLog(`Crypto trade liquidated! Lost ${this.formatMoney(Math.abs(earned))}. 📉`, "negative");
       sfx.playAlert();
     }
     this.saveGame();
@@ -557,13 +612,13 @@ class GameState {
 
   postChitterTweet(tweetText) {
     if (!tweetText.trim()) return;
-    this.stats.clout = Math.min(100, this.stats.clout + 6);
+    this.stats.fun = Math.min(100, this.stats.fun + 8);
     this.chitterFeed.unshift({
       author: `@${this.profile.name.toLowerCase()}_${this.profile.university}`,
       time: "Just now",
       text: tweetText
     });
-    this.addLog("Posted a viral take on Chitter! Gained +6 Clout 🔥", "positive");
+    this.addLog("Posted a viral take on Chitter! Gained fun and engagement 🔥", "positive");
     sfx.playNotification();
     if (window.cloudSync) {
       window.cloudSync.postLiveTweet(tweetText);
@@ -572,5 +627,8 @@ class GameState {
   }
 }
 
-// Global Game Instance
+// Global Game Engine Instance
 window.game = new GameState();
+window.HOUSING_TIERS = HOUSING_TIERS;
+window.VEHICLE_TIERS = VEHICLE_TIERS;
+window.STORY_CHAPTERS = STORY_CHAPTERS;

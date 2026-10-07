@@ -36,14 +36,19 @@ const UI = {
       clockPhase: document.getElementById("clock-phase"),
       fillEnergy: document.getElementById("fill-energy"),
       fillHunger: document.getElementById("fill-hunger"),
+      fillHygiene: document.getElementById("fill-hygiene"),
+      fillFun: document.getElementById("fill-fun"),
+      fillHealth: document.getElementById("fill-health"),
       fillCgpa: document.getElementById("fill-cgpa"),
-      fillClout: document.getElementById("fill-clout"),
       valEnergy: document.getElementById("val-energy"),
       valHunger: document.getElementById("val-hunger"),
+      valHygiene: document.getElementById("val-hygiene"),
+      valFun: document.getElementById("val-fun"),
+      valHealth: document.getElementById("val-health"),
       valCgpa: document.getElementById("val-cgpa"),
-      valClout: document.getElementById("val-clout"),
       walletAmount: document.getElementById("wallet-amount"),
       semesterBadge: document.getElementById("semester-badge"),
+      vehicleBadge: document.getElementById("vehicle-badge"),
       locationName: document.getElementById("location-name"),
       locationTag: document.getElementById("location-tag"),
       locationDesc: document.getElementById("location-desc"),
@@ -53,7 +58,16 @@ const UI = {
       eventModal: document.getElementById("event-modal"),
       spawnScreen: document.getElementById("spawn-screen"),
       authModal: document.getElementById("auth-modal"),
-      authBadge: document.getElementById("auth-badge")
+      authBadge: document.getElementById("auth-badge"),
+      campusMapView: document.getElementById("campus-map-view"),
+      playerRoomView: document.getElementById("player-room-view"),
+      campusActionsView: document.getElementById("campus-actions-view"),
+      mapUniTitle: document.getElementById("map-uni-title"),
+      mapCurrentLocBadge: document.getElementById("map-current-loc-badge"),
+      mapPinsContainer: document.getElementById("map-pins-container"),
+      houseTitle: document.getElementById("house-title"),
+      houseRentStatus: document.getElementById("house-rent-status"),
+      houseDesc: document.getElementById("house-desc")
     };
   },
 
@@ -126,8 +140,20 @@ const UI = {
   renderAll() {
     this.updateHeaderAndStats();
     this.renderLocation();
+    this.renderVisualMap();
+    this.renderHousingRoom();
     this.renderActivityLogs();
     this.checkPendingEvent();
+  },
+
+  switchViewportView(viewName) {
+    document.querySelectorAll(".view-tab-btn").forEach(b => b.classList.remove("active"));
+    const activeBtn = document.getElementById(`tab-btn-${viewName}`);
+    if (activeBtn) activeBtn.classList.add("active");
+
+    if (this.dom.campusMapView) this.dom.campusMapView.style.display = viewName === "map" ? "flex" : "none";
+    if (this.dom.playerRoomView) this.dom.playerRoomView.style.display = viewName === "room" ? "flex" : "none";
+    if (this.dom.campusActionsView) this.dom.campusActionsView.style.display = viewName === "actions" ? "block" : "none";
   },
 
   updateHeaderAndStats() {
@@ -142,20 +168,90 @@ const UI = {
     // Update body theme class for dynamic sky lighting
     document.body.className = `time-${phase.phase}`;
 
-    // Update Meters
-    this.dom.fillEnergy.style.width = `${game.stats.energy}%`;
-    this.dom.fillHunger.style.width = `${game.stats.hunger}%`;
-    this.dom.fillCgpa.style.width = `${(game.stats.cgpa / 5.0) * 100}%`;
-    this.dom.fillClout.style.width = `${game.stats.clout}%`;
+    // Update 6 Core Stat Meters
+    if (this.dom.fillEnergy) this.dom.fillEnergy.style.width = `${game.stats.energy}%`;
+    if (this.dom.fillHunger) this.dom.fillHunger.style.width = `${game.stats.hunger}%`;
+    if (this.dom.fillHygiene) this.dom.fillHygiene.style.width = `${game.stats.hygiene}%`;
+    if (this.dom.fillFun) this.dom.fillFun.style.width = `${game.stats.fun}%`;
+    if (this.dom.fillHealth) this.dom.fillHealth.style.width = `${game.stats.health}%`;
+    if (this.dom.fillCgpa) this.dom.fillCgpa.style.width = `${(game.stats.cgpa / 5.0) * 100}%`;
 
-    this.dom.valEnergy.textContent = `${game.stats.energy}%`;
-    this.dom.valHunger.textContent = `${game.stats.hunger}%`;
-    this.dom.valCgpa.textContent = `${game.stats.cgpa.toFixed(2)}`;
-    this.dom.valClout.textContent = `${game.stats.clout}%`;
+    if (this.dom.valEnergy) this.dom.valEnergy.textContent = `${game.stats.energy}%`;
+    if (this.dom.valHunger) this.dom.valHunger.textContent = `${game.stats.hunger}%`;
+    if (this.dom.valHygiene) this.dom.valHygiene.textContent = `${game.stats.hygiene}%`;
+    if (this.dom.valFun) this.dom.valFun.textContent = `${game.stats.fun}%`;
+    if (this.dom.valHealth) this.dom.valHealth.textContent = `${game.stats.health}%`;
+    if (this.dom.valCgpa) this.dom.valCgpa.textContent = `${game.stats.cgpa.toFixed(2)}`;
 
-    // Wallet & Semester
-    this.dom.walletAmount.textContent = game.formatMoney(game.stats.cash);
-    this.dom.semesterBadge.textContent = `Week ${game.time.semesterWeek} • 1st Sem`;
+    // Wallet, Vehicle & Semester
+    if (this.dom.walletAmount) this.dom.walletAmount.textContent = game.formatMoney(game.finances.cash || game.stats.cash || 0);
+    if (this.dom.semesterBadge) this.dom.semesterBadge.textContent = `Week ${game.time.semesterWeek} • ${game.profile.level}`;
+
+    const v = VEHICLE_TIERS[game.vehicle] || VEHICLE_TIERS.trek;
+    if (this.dom.vehicleBadge) this.dom.vehicleBadge.innerHTML = `<span>🚲</span> ${v.name}`;
+  },
+
+  renderVisualMap() {
+    if (!this.dom.mapPinsContainer) return;
+    const uni = UNIVERSITIES[game.profile.university] || UNIVERSITIES.unilorin;
+    if (this.dom.mapUniTitle) this.dom.mapUniTitle.innerHTML = `<span>🏛️</span> ${uni.name} Map`;
+
+    const currLoc = uni.locations.find(l => l.id === game.currentLocationId) || uni.locations[0];
+    if (this.dom.mapCurrentLocBadge) this.dom.mapCurrentLocBadge.textContent = `📍 ${currLoc.name}`;
+
+    this.dom.mapPinsContainer.innerHTML = "";
+    uni.locations.forEach(loc => {
+      const card = document.createElement("div");
+      const isCurrent = loc.id === game.currentLocationId;
+      card.className = `map-landmark-card ${isCurrent ? "current-location" : ""}`;
+      card.innerHTML = `
+        <div class="landmark-top">
+          <span class="landmark-icon">${loc.icon || "📍"}</span>
+          <span class="landmark-badge">${isCurrent ? "HERE" : loc.tag}</span>
+        </div>
+        <div class="landmark-name">${loc.name}</div>
+        <div class="landmark-vibe">${loc.desc}</div>
+      `;
+
+      card.onclick = () => {
+        if (!isCurrent) {
+          game.travelTo(loc.id);
+          this.renderAll();
+        }
+      };
+
+      this.dom.mapPinsContainer.appendChild(card);
+    });
+  },
+
+  renderHousingRoom() {
+    const tier = HOUSING_TIERS[game.housing] || HOUSING_TIERS.squatter;
+    if (this.dom.houseTitle) this.dom.houseTitle.innerHTML = `<span>🏠</span> ${tier.name}`;
+    if (this.dom.houseRentStatus) {
+      if (tier.rentCost === 0) {
+        this.dom.houseRentStatus.textContent = "Rent Free (Squatter)";
+      } else {
+        this.dom.houseRentStatus.textContent = `Rent: ${game.formatMoney(tier.rentCost)}/yr (${game.finances.rentDueInDays || 30}d left)`;
+      }
+    }
+    if (this.dom.houseDesc) {
+      this.dom.houseDesc.textContent = `${tier.desc} Perks: ${tier.perks}`;
+    }
+  },
+
+  openHousingUpgradeSelector() {
+    const keys = Object.keys(HOUSING_TIERS);
+    const options = keys.map((k, i) => {
+      const h = HOUSING_TIERS[k];
+      return `${i + 1}. ${h.name} (${game.formatMoney(h.rentCost)}/yr) - ${h.roomType}`;
+    }).join("\n\n");
+
+    const choice = prompt(`Select New Accommodation to rent:\n\n${options}`);
+    const idx = parseInt(choice) - 1;
+    if (!isNaN(idx) && keys[idx]) {
+      game.upgradeHousing(keys[idx]);
+      this.renderAll();
+    }
   },
 
   updateAuthBadge(user) {
@@ -441,8 +537,10 @@ const UI = {
 window.UI = UI;
 window.attendLecture = () => { game.attendLecture(); UI.renderAll(); };
 window.readNightClass = () => { game.readNightClass(); UI.renderAll(); };
-window.takeNap = () => { game.takeNap(); UI.renderAll(); };
-window.sleepFullNight = () => { game.sleepFullNight(); UI.renderAll(); };
+window.takeShower = () => { game.takeShower(); UI.renderAll(); };
+window.sleepInRoom = () => { game.sleepInRoom(); UI.renderAll(); };
+window.cookConcoctionRice = () => { game.cookConcoctionRice(); UI.renderAll(); };
+window.visitClinic = () => { game.visitClinic(); UI.renderAll(); };
 window.partyNight = () => { game.partyNight(); UI.renderAll(); };
 window.openPhone = () => { UI.openPhoneModal(); };
 

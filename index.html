@@ -34,7 +34,7 @@
       </div>
     </header>
 
-    <!-- Core Stat Meters -->
+    <!-- Core 6-Stat Meters (Energy, Hunger, Hygiene, Social/Fun, Health, CGPA) -->
     <section class="meters-bar">
       <div class="meter-card">
         <div class="meter-header">
@@ -58,106 +58,190 @@
 
       <div class="meter-card">
         <div class="meter-header">
-          <span>📚 CGPA</span>
-          <span id="val-cgpa" style="color:#00e676;">3.42</span>
+          <span>🚿 Clean</span>
+          <span id="val-hygiene" style="color:#00b0ff;">80%</span>
         </div>
         <div class="meter-bar-track">
-          <div class="meter-bar-fill fill-cgpa" id="fill-cgpa" style="width: 68%;"></div>
+          <div class="meter-bar-fill fill-hygiene" id="fill-hygiene" style="width: 80%;"></div>
         </div>
       </div>
 
       <div class="meter-card">
         <div class="meter-header">
-          <span>🔥 Clout</span>
-          <span id="val-clout" style="color:#ff007f;">25%</span>
+          <span>🎉 Fun</span>
+          <span id="val-fun" style="color:#d500f9;">65%</span>
         </div>
         <div class="meter-bar-track">
-          <div class="meter-bar-fill fill-clout" id="fill-clout" style="width: 25%;"></div>
+          <div class="meter-bar-fill fill-fun" id="fill-fun" style="width: 65%;"></div>
+        </div>
+      </div>
+
+      <div class="meter-card">
+        <div class="meter-header">
+          <span>💊 Health</span>
+          <span id="val-health" style="color:#ff1744;">95%</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill fill-health" id="fill-health" style="width: 95%;"></div>
+        </div>
+      </div>
+
+      <div class="meter-card">
+        <div class="meter-header">
+          <span>📚 CGPA</span>
+          <span id="val-cgpa" style="color:#00e676;">3.45</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill fill-cgpa" id="fill-cgpa" style="width: 69%;"></div>
         </div>
       </div>
     </section>
 
-    <!-- Wallet & Semester Floating Pill -->
+    <!-- Wallet, Vehicle & Semester Floating Pill -->
     <div class="wallet-pill">
       <div>
-        <div class="wallet-label">Bank Balance</div>
+        <div class="wallet-label" style="font-size:10px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">PalmPay Balance</div>
         <div class="wallet-amount" id="wallet-amount">₦12,000</div>
       </div>
-      <div class="semester-badge" id="semester-badge">Week 6 • 1st Sem</div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+        <div class="story-academic-badge" id="semester-badge">Week 1 • 100L</div>
+        <div class="vehicle-badge" id="vehicle-badge"><span>🚶</span> Leggedis Benz</div>
+      </div>
+    </div>
+
+    <!-- Viewport Views Switcher Tabs -->
+    <div class="view-tabs-header">
+      <button class="view-tab-btn active" id="tab-btn-map" onclick="UI.switchViewportView('map')">
+        <span>🗺️</span> Campus Map
+      </button>
+      <button class="view-tab-btn" id="tab-btn-room" onclick="UI.switchViewportView('room')">
+        <span>🏠</span> My Room
+      </button>
+      <button class="view-tab-btn" id="tab-btn-actions" onclick="UI.switchViewportView('actions')">
+        <span>⚡</span> Actions
+      </button>
     </div>
 
     <!-- Scrollable Main Campus Viewport -->
     <main class="main-viewport">
 
-      <!-- Current Location Card -->
-      <section class="location-card">
-        <div class="location-top">
-          <div class="location-name" id="location-name"><span>📍</span> Tanke Junction</div>
-          <div class="location-tag" id="location-tag">Off-Campus Hub</div>
+      <!-- VIEW 1: Campus Interactive Visual Map -->
+      <section class="campus-visual-map" id="campus-map-view">
+        <div class="map-ambient-grid"></div>
+        <div class="map-header">
+          <div class="map-title" id="map-uni-title"><span>🏛️</span> Unilorin Campus Map</div>
+          <div class="map-student-density" id="map-current-loc-badge">📍 Tanke Junction</div>
         </div>
-        <div class="location-desc" id="location-desc">Commercial hub packed with Keke queues, student food joints, POS stands, and Tanke hold-up.</div>
-        <button class="action-btn" style="width: 100%; align-items: center; background: rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.3); color: var(--cyan); font-weight: 800; cursor: pointer;" onclick="UI.openMapLocationSelector()">
-          🗺️ Travel to Another Location (Campus Shuttle)
+        <div style="font-size:11.5px; color:var(--text-muted); z-index:2;">
+          Click any landmark below to travel instantly via campus shuttle, Keke, or your ride:
+        </div>
+        <div class="map-pins-container" id="map-pins-container">
+          <!-- Landmark Cards injected dynamically by UI.renderVisualMap() -->
+        </div>
+      </section>
+
+      <!-- VIEW 2: Player Housing & Hostel Room Interior -->
+      <section class="player-house-card" id="player-room-view" style="display:none;">
+        <div class="house-header">
+          <div class="house-title" id="house-title"><span>🏠</span> Hostel Squatter Bunk</div>
+          <div class="house-rent-status" id="house-rent-status">Rent Free (Squatting)</div>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.4;" id="house-desc">
+          8 coursemates sharing a room. Boiling rings everywhere, light fluctuates, but rent is zero.
+        </div>
+        <div style="font-size:11px; font-weight:800; color:var(--accent); text-transform:uppercase; margin-top:2px;">
+          🛏️ Room Survival Actions:
+        </div>
+        <div class="house-appliances-grid">
+          <button class="room-action-btn" onclick="takeShower()">
+            <span style="font-size:22px;">🚿</span>
+            <span>Cold Shower</span>
+            <span style="font-size:9.5px; color:var(--cyan);">100% Hygiene</span>
+          </button>
+          <button class="room-action-btn" onclick="sleepInRoom()">
+            <span style="font-size:22px;">🛏️</span>
+            <span>Sleep on Bed</span>
+            <span style="font-size:9.5px; color:var(--accent);">100% Energy</span>
+          </button>
+          <button class="room-action-btn" onclick="cookConcoctionRice()">
+            <span style="font-size:22px;">🍲</span>
+            <span>Cook Pot Rice</span>
+            <span style="font-size:9.5px; color:var(--primary);">+55 Hunger (₦800)</span>
+          </button>
+        </div>
+        <button class="action-btn" style="width:100%; align-items:center; background:rgba(0,230,118,0.12); border-color:var(--primary); color:var(--primary); font-weight:800; cursor:pointer;" onclick="UI.openHousingUpgradeSelector()">
+          🏘️ Upgrade Housing (Rent Self-Contain / Luxury Flat)
         </button>
       </section>
 
-      <!-- Campus Actions Section -->
-      <div class="actions-section-title">⚡ Instant Campus Actions</div>
-      <section class="actions-grid">
-        <button class="action-btn" onclick="attendLecture()">
-          <span class="action-icon">🎓</span>
-          <span class="action-title">Attend 2h Lecture</span>
-          <span class="action-costs">
-            <span class="cost-neg">-20⚡</span>
-            <span class="cost-neg">-15🍔</span>
-            <span class="cost-pos">+0.08📚</span>
-          </span>
-        </button>
+      <!-- VIEW 3: Campus Actions Section -->
+      <section id="campus-actions-view" style="display:none;">
+        <!-- Current Location Card -->
+        <div class="location-card" style="margin-bottom:12px;">
+          <div class="location-top">
+            <div class="location-name" id="location-name"><span>📍</span> Tanke Junction</div>
+            <div class="location-tag" id="location-tag">Off-Campus Hub</div>
+          </div>
+          <div class="location-desc" id="location-desc">Commercial hub packed with Keke queues, student food joints, POS stands, and Tanke hold-up.</div>
+        </div>
 
-        <button class="action-btn" onclick="readNightClass()">
-          <span class="action-icon">📖</span>
-          <span class="action-title">TDB Night Class</span>
-          <span class="action-costs">
-            <span class="cost-neg">-35⚡</span>
-            <span class="cost-neg">-20🍔</span>
-            <span class="cost-pos">+0.22📚</span>
-          </span>
-        </button>
+        <div class="actions-section-title">⚡ Instant Academic &amp; Social Choices</div>
+        <div class="actions-grid">
+          <button class="action-btn" onclick="attendLecture()">
+            <span class="action-icon">🎓</span>
+            <span class="action-title">Attend 2h Lecture</span>
+            <span class="action-costs">
+              <span class="cost-neg">-20⚡</span>
+              <span class="cost-neg">-15🍔</span>
+              <span class="cost-pos">+0.08📚</span>
+            </span>
+          </button>
 
-        <button class="action-btn" onclick="takeNap()">
-          <span class="action-icon">😴</span>
-          <span class="action-title">Hostel Nap (3h)</span>
-          <span class="action-costs">
-            <span class="cost-pos">+45⚡</span>
-            <span style="color:var(--text-muted);">Rest up</span>
-          </span>
-        </button>
+          <button class="action-btn" onclick="readNightClass()">
+            <span class="action-icon">📖</span>
+            <span class="action-title">TDB Night Class</span>
+            <span class="action-costs">
+              <span class="cost-neg">-35⚡</span>
+              <span class="cost-neg">-20🍔</span>
+              <span class="cost-pos">+0.22📚</span>
+            </span>
+          </button>
 
-        <button class="action-btn" onclick="sleepFullNight()">
-          <span class="action-icon">🛏️</span>
-          <span class="action-title">Full Night Sleep</span>
-          <span class="action-costs">
-            <span class="cost-pos">100%⚡</span>
-            <span style="color:var(--text-muted);">Wake at 7am</span>
-          </span>
-        </button>
+          <button class="action-btn" onclick="takeShower()">
+            <span class="action-icon">🚿</span>
+            <span class="action-title">Hostel Shower</span>
+            <span class="action-costs">
+              <span class="cost-pos">100%🚿</span>
+              <span class="cost-pos">+10⚡</span>
+            </span>
+          </button>
 
-        <button class="action-btn" onclick="partyNight()">
-          <span class="action-icon">🕺</span>
-          <span class="action-title">Club &amp; Party</span>
-          <span class="action-costs">
-            <span class="cost-neg">-₦8,000</span>
-            <span class="cost-pos">+20🔥</span>
-          </span>
-        </button>
+          <button class="action-btn" onclick="visitClinic()">
+            <span class="action-icon">🏥</span>
+            <span class="action-title">Visit Health Centre</span>
+            <span class="action-costs">
+              <span class="cost-pos">100%💊</span>
+              <span class="cost-neg">-₦1,500</span>
+            </span>
+          </button>
 
-        <button class="action-btn" onclick="openPhone()">
-          <span class="action-icon">📱</span>
-          <span class="action-title">CampusPhone OS</span>
-          <span class="action-costs">
-            <span style="color:var(--cyan);">Bank, Eats &amp; Chitter</span>
-          </span>
-        </button>
+          <button class="action-btn" onclick="partyNight()">
+            <span class="action-icon">🕺</span>
+            <span class="action-title">Club &amp; Nightlife</span>
+            <span class="action-costs">
+              <span class="cost-neg">-₦8,000</span>
+              <span class="cost-pos">100%🎉</span>
+            </span>
+          </button>
+
+          <button class="action-btn" onclick="openPhone()">
+            <span class="action-icon">📱</span>
+            <span class="action-title">CampusPhone OS</span>
+            <span class="action-costs">
+              <span style="color:var(--cyan);">PalmPay, Eats &amp; Chitter</span>
+            </span>
+          </button>
+        </div>
       </section>
 
       <!-- Live Campus Activity Log Stream -->
