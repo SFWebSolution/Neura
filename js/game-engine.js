@@ -72,16 +72,22 @@ const UNIVERSITIES = {
     motto: "Better By Far",
     city: "Ilorin, Kwara State",
     locations: [
-      { id: "tanke", name: "Tanke Junction & Oke-Odo", tag: "Off-Campus Hub", icon: "🚕", desc: "Commercial hub packed with Keke queues, Tanke Amala joints, supermarkets, and morning hold-up." },
+      { id: "tanke", name: "Tanke Junction & Oke-Odo", tag: "Off-Campus Hub", icon: "🚕", desc: "Commercial hub packed with Keke queues, Tanke Amala joints, supermarkets, POS stands, and morning hold-up." },
       { id: "sanrab", name: "Sanrab Hostel Zone", tag: "Student Ghetto", icon: "🏘️", desc: "Prime off-campus living area. Generators humming, barbers, laundry lines, and late-night indomie aroma." },
       { id: "main_gate", name: "Main Gate & Security Post", tag: "Screening Point", icon: "🚧", desc: "Strict Dress Code Marshalls inspecting students' trousers, hairstyles, and ID cards before entry." },
       { id: "ps_walkway", name: "The Walkway & Flyover", tag: "Campus Catwalk", icon: "🚶", desc: "The legendary sheltered walkway. Fashion showcase, political flyers, and the long trek between faculties." },
       { id: "cbt_centre", name: "Permanent Site CBT Centre", tag: "Exam Arena", icon: "💻", desc: "Halls 1 to 5. Biometric thumbprint scanners, nervous students praying, and 8 AM test tension." },
       { id: "faculty_science", name: "Faculty of Science & NLT", tag: "Lecture Halls", icon: "🔬", desc: "500-capacity New Lecture Theatre. Crowded general courses, lab practicals, and 7 AM seat rushing." },
+      { id: "faculty_eng", name: "Faculty of Engineering & Tech", tag: "Engineering Complex", icon: "⚙️", desc: "Workshop machines, mechanical draws, late night laboratory reports, and hard calculations." },
+      { id: "faculty_cis", name: "Faculty of CIS (ICT Centre)", tag: "Tech Sanctum", icon: "🖥️", desc: "Computer Information Sciences hub. Programmers, tech founders, UI designers, and AC labs." },
       { id: "senate", name: "Senate Building Complex", tag: "Admin Power", icon: "🏛️", desc: "Imposing administrative tower, Vice Chancellor's office, matriculation ground, and bursary." },
       { id: "dam", name: "Unilorin Dam & Biological Gardens", tag: "Scenic Dates", icon: "🌊", desc: "Cool serene waters, monkeys at the zoo, couple hideouts, and peaceful escape from toxic lecturers." },
       { id: "school_park", name: "School Park Terminal", tag: "Transit Hub", icon: "🚌", desc: "Coaster buses loading students to Post Office, Challenge, and Tanke. Intense rush-hour struggle." },
-      { id: "clinic", name: "University Health Services", tag: "Clinic Bay", icon: "🏥", desc: "Campus hospital. Sick bay beds, long queues for medical clearance, and paracetamol prescriptions." }
+      { id: "clinic", name: "University Health Services", tag: "Clinic Bay", icon: "🏥", desc: "Campus hospital. Sick bay beds, long queues for medical clearance, and paracetamol prescriptions." },
+      { id: "village_hostel", name: "Hostel Village (Lagos & Zamfara)", tag: "Campus Dorms", icon: "🏢", desc: "On-campus male and female hostels. Shouting 'Up NEPA', bucket water queues, and hall fellowship." },
+      { id: "stadium", name: "Unilorin Sports Complex & Stadium", tag: "SUG Games", icon: "⚽", desc: "Inter-faculty football matches, marathon races, athletics track, and weekend workout sessions." },
+      { id: "library", name: "Unilorin Main Library (PTDF)", tag: "Silent Sanctum", icon: "📚", desc: "Air-conditioned multi-floor research citadel. Deep study cubicles and zero noise tolerance." },
+      { id: "chapel_mosque", name: "University Chapel & Central Mosque", tag: "Spiritual Centers", icon: "🕌", desc: "Friday Jum'ah prayers and Sunday service fellowships. Where students pray for 5.0 CGPA." }
     ]
   },
   unilag: {
@@ -97,10 +103,158 @@ const UNIVERSITIES = {
       { id: "cits", name: "CITS Tech Centre & Library", tag: "Tech & Reading", icon: "💻", desc: "Air-conditioned labs, free Wi-Fi, coding students, and quiet research desks." },
       { id: "amphi", name: "Main Auditorium & Amphitheatre", tag: "Event Stage", icon: "🎭", desc: "SUG election manifestos, comedy shows, campus concerts, fellowship night vigils." },
       { id: "engineering", name: "Faculty of Engineering Labs", tag: "Sleepless Hub", icon: "⚙️", desc: "Heavy machinery workshops, late-night CAD drawings, and exhausted engineering students." },
-      { id: "health_centre", name: "Unilag Health Centre", tag: "Medical Bay", icon: "🏥", desc: "Student clinic near Jaja Hall for medical excuses, sick tests, and emergency relief." }
+      { id: "health_centre", name: "Unilag Health Centre", tag: "Medical Bay", icon: "🏥", desc: "Student clinic near Jaja Hall for medical excuses, sick tests, and emergency relief." },
+      { id: "jaja_hall", name: "King Jaja Hall & Aroma", tag: "Male Citadel", icon: "🏰", desc: "Legendary male hostel. Aroma fast food joint, 'aro' banter, and late night room politics." },
+      { id: "moremi_hall", name: "Moremi Hall of Residence", tag: "Female Fortress", icon: "🌸", desc: "Prestige female hostel. Ballers driving luxury cars parked outside waiting for dates." },
+      { id: "sport_centre", name: "Unilag Sports Center", tag: "Athletic Arena", icon: "🏀", desc: "Swimming pool, indoor basketball court, gym, tennis courts, and university games." },
+      { id: "dli", name: "DLI Gate & Commercial Hub", tag: "Food & Xerox", icon: "🖨️", desc: "Photocopy centers, binding shops, chilled Chapman stands, and quick snacks." },
+      { id: "yaba_tech_border", name: "Yaba Tech Border & Commercial Road", tag: "Artisan Hub", icon: "🎨", desc: "Bustling boundary line filled with computer repairs, art supplies, and affordable food." },
+      { id: "guest_houses", name: "Unilag Guest Houses & Lagoon View", tag: "VIP Zone", icon: "🏨", desc: "High-end campus hotel with lagoon buffet, conference halls, and university dignitaries." },
+      { id: "fss", name: "Faculty of Social Sciences (FSS)", tag: "Political Hub", icon: "📊", desc: "Economics, Sociology, and Mass Comm headquarters. Packed lecture halls and fiery debates." },
+      { id: "medical_cmul", name: "College of Medicine (CMUL Idi-Araba)", tag: "Medical Campus", icon: "🩺", desc: "LUTH hospital grounds, white lab coats, anatomy dissection labs, and stethoscope grinders." }
     ]
   }
 };
+
+// Items Available for Purchase
+const SHOP_ITEMS = [
+  { id: "amala_tanke", name: "Amala + Gbegiri & Ewedu (Goat Meat)", category: "food", cost: 1800, hunger: 45, energy: 25, desc: "Hot steaming Amala from Tanke with spicy goat meat." },
+  { id: "jollof_chicken", name: "Jollof Rice & Fried Chicken", category: "food", cost: 3200, hunger: 60, energy: 30, desc: "Classic Nigerian party jollof with spicy peppered chicken." },
+  { id: "shawarma_sausage", name: "New Hall Double-Sausage Shawarma", category: "food", cost: 2500, hunger: 40, energy: 20, desc: "Late-night creamy campus shawarma wrapped with ketchup and chili." },
+  { id: "garri_groundnut", name: "Hostel Garri + Groundnut & Sugar", category: "food", cost: 600, hunger: 30, energy: 15, desc: "Student life-saver. Cold water soaking with crunchy groundnut." },
+  { id: "monster_energy", name: "Ice Cold Predator Energy Drink", category: "food", cost: 1000, hunger: 5, energy: 50, desc: "Essential fuel for TDB night reading sessions." },
+  { id: "past_questions", name: "10-Year Departmental Past Questions (PQ)", category: "academic", cost: 3500, cgpaBoost: 0.18, desc: "Comprehensive past exam questions and vetted solutions." },
+  { id: "oraimo_powerbank", name: "Oraimo 30,000mAh Power Bank", category: "gear", cost: 22000, desc: "Survival powerhouse during hostel blackouts and NEPA strikes." },
+  { id: "designer_drip", name: "Campus Catwalk Drip (Native + Loafers)", category: "fashion", cost: 45000, fun: 35, desc: "Turn heads on the walkway. Instant respect from coursemates and lecturers." }
+];
+
+// Campus Side Gigs / Hustles
+const CAMPUS_JOBS = [
+  { id: "assignment_writer", name: "Assignment & Term Paper Writer", payout: 12000, energyCost: 25, desc: "Write assignments and course term papers for rich coursemates." },
+  { id: "pos_agent", name: "Hostel POS Cash Agent", payout: 9500, energyCost: 20, desc: "Disburse cash at night when campus ATMs are completely out of cash." },
+  { id: "okrika_vendor", name: "Vintage & Thrift (Okrika) Vendor", payout: 16000, energyCost: 25, desc: "Curate streetwear shirts and denim jackets to sell in hostel rooms." },
+  { id: "hair_braider", name: "Campus Hair Stylist / Barber", payout: 11000, energyCost: 25, desc: "Style hair or trim clean fades for students preparing for weekend parties." },
+  { id: "phone_repair", name: "Screen Guard & Phone Repair Tech", payout: 14000, energyCost: 25, desc: "Fix cracked screens and paste glass screen protectors on campus." },
+  { id: "crypto_futures", name: "Crypto Futures Scalping (High Risk)", payoutMin: -30000, payoutMax: 75000, energyCost: 35, desc: "Trade 50x leverage on Binance. You either make ₦75k or get liquidated!" }
+];
+
+// Random Campus Drama Encounters
+const CAMPUS_EVENTS = [
+  {
+    id: "dress_code_marshall",
+    uni: "unilorin",
+    title: "⚠️ Dress Code Marshall Caught You!",
+    desc: "A stern lecturer and security man stop you on the Walkway. They claim your trousers are fitted and hair style violates university dressing ethics. What do you do?",
+    options: [
+      {
+        text: "Apologize politely ('Good morning sir, I'm truly sorry, I will change immediately')",
+        outcome: (stats) => {
+          stats.energy = Math.max(0, stats.energy - 10);
+          return { msg: "The marshall waved you through with a stern warning. Survived, but lost 10 Energy from tension.", type: "neutral" };
+        }
+      },
+      {
+        text: "Quote the student handbook and defend your style",
+        outcome: (stats) => {
+          stats.fun = Math.min(100, stats.fun + 15);
+          stats.cgpa = Math.max(0.5, +(stats.cgpa - 0.20).toFixed(2));
+          return { msg: "A student crowd gathered and cheered! But the marshall noted your matric number (-0.20 CGPA penalty!).", type: "negative" };
+        }
+      },
+      {
+        text: "Make a swift U-turn and take a Keke back to Tanke",
+        outcome: (stats) => {
+          stats.energy = Math.max(0, stats.energy - 15);
+          return { msg: "Escaped the marshall's radar, but missed your early morning seat in NLT.", type: "neutral" };
+        }
+      }
+    ]
+  },
+  {
+    id: "boiling_ring_raid",
+    title: "⚡ Surprise Hostel Porter Appliance Raid!",
+    desc: "At 10:45 PM, loud knocks echo on your hostel door! Hall porters and security are searching for contraband boiling rings and hotplates.",
+    options: [
+      {
+        text: "Hide the boiling ring inside your roommate's laundry bag",
+        outcome: (stats) => {
+          if (Math.random() > 0.35) {
+            return { msg: "Success! The porters searched and found nothing. Room celebrated with midnight garri!", type: "positive" };
+          } else {
+            return { msg: "Busted! The porter confiscated the appliance and issued a stern warning notice.", type: "negative" };
+          }
+        }
+      },
+      {
+        text: "Tip the chief porter ₦2,000 for 'cold pure water'",
+        outcome: (stats) => {
+          if (game.finances.cash >= 2000) {
+            game.finances.cash -= 2000;
+            return { msg: "The porter smiled, pocketed the ₦2,000, and shouted 'Room inspected, all clean!'", type: "positive" };
+          } else {
+            return { msg: "You didn't have enough cash! The appliance was confiscated.", type: "negative" };
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: "surprise_test",
+    title: "🚨 Surprise 20-Mark Continuous Assessment Test!",
+    desc: "You entered the lecture hall and the lecturer locked the main doors! He commands everyone to bring out a blank sheet for an unannounced test.",
+    options: [
+      {
+        text: "Write with confidence based on your class notes",
+        outcome: (stats) => {
+          const delta = stats.cgpa >= 3.0 ? 0.12 : -0.15;
+          stats.cgpa = Math.min(5.0, Math.max(0.5, +(stats.cgpa + delta).toFixed(2)));
+          stats.energy = Math.max(0, stats.energy - 15);
+          return { msg: delta > 0 ? "Your past reading saved you! Scored 17/20 on the test (+0.12 CGPA 📚)" : "Struggled with the formulas. Scored 5/20 (-0.15 CGPA 📉)", type: delta > 0 ? "positive" : "negative" };
+        }
+      },
+      {
+        text: "Whisper and peep answers from the genius student next to you",
+        outcome: (stats) => {
+          if (Math.random() > 0.4) {
+            stats.cgpa = Math.min(5.0, +(stats.cgpa + 0.15).toFixed(2));
+            return { msg: "Brilliant copy-and-paste teamwork! Secured 19/20 on the test (+0.15 CGPA 📚)", type: "positive" };
+          } else {
+            stats.cgpa = Math.max(0.5, +(stats.cgpa - 0.25).toFixed(2));
+            return { msg: "Invigilator caught you stretching your neck! Script torn with a 0/20 zero mark (-0.25 CGPA 💀)", type: "negative" };
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: "lagoon_front_date",
+    uni: "unilag",
+    title: "🌊 Evening Breeze at Lagoon Front",
+    desc: "Your campus crush invites you to chill at the Lagoon Front as the sunset breeze rolls off the water.",
+    options: [
+      {
+        text: "Buy cold stone ice cream and shawarma to share (₦4,000)",
+        outcome: (stats) => {
+          if (game.finances.cash >= 4000) {
+            game.finances.cash -= 4000;
+            stats.fun = 100;
+            return { msg: "Romantic evening vibes! Great conversations and memories by the lagoon (+100% Fun 🎉)", type: "positive" };
+          } else {
+            return { msg: "You didn't have enough cash, so you just walked along the shoreline.", type: "neutral" };
+          }
+        }
+      },
+      {
+        text: "Discuss course syllabus and prepare together for midterms",
+        outcome: (stats) => {
+          stats.cgpa = Math.min(5.0, +(stats.cgpa + 0.10).toFixed(2));
+          stats.fun = Math.min(100, stats.fun + 20);
+          return { msg: "Study date success! Motivated each other and revised key topics (+0.10 CGPA 📚)", type: "positive" };
+        }
+      }
+    ]
+  }
+];
 
 // Player Housing Tiers
 const HOUSING_TIERS = {
