@@ -1,675 +1,434 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Neura — Next-Gen AI Voice Assistant for Android</title>
-  <link rel="icon" type="image/png" href="logo.png">
-  <style>
-    :root {
-      --bg-dark: #07080d;
-      --surface-card: #12141f;
-      --card-border: #262b44;
-      --cyan: #00f0ff;
-      --purple: #7928ca;
-      --magenta: #ff007f;
-      --blue: #0070f3;
-      --green: #00e676;
-      --text-main: #f0f4f8;
-      --text-muted: #9ba3af;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-
-    /* Ambient Background Glow */
-    .ambient-glow {
-      position: fixed;
-      top: -20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 800px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(121, 40, 202, 0.12) 40%, transparent 70%);
-      filter: blur(80px);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .ambient-glow-bottom {
-      position: fixed;
-      bottom: -30%;
-      right: 10%;
-      width: 700px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255, 0, 127, 0.1) 0%, rgba(0, 112, 243, 0.08) 50%, transparent 70%);
-      filter: blur(100px);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Navbar */
-    header {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 24px 8%;
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 900;
-      font-size: 24px;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, var(--cyan), #fff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-decoration: none;
-    }
-
-    .logo-img {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      object-fit: cover;
-      box-shadow: 0 0 16px var(--cyan);
-      border: 1px solid rgba(0, 240, 255, 0.4);
-    }
-
-    .nav-btn {
-      padding: 10px 22px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 14px;
-      text-decoration: none;
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--card-border);
-      transition: all 0.3s ease;
-    }
-
-    .nav-btn:hover {
-      background: var(--cyan);
-      color: var(--bg-dark);
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
-    }
-
-    /* Hero Section */
-    .hero {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 60px 20px 40px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      border-radius: 20px;
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      color: var(--cyan);
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 24px;
-      letter-spacing: 0.5px;
-    }
-
-    .hero h1 {
-      font-size: clamp(40px, 6vw, 68px);
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: -1.5px;
-      margin-bottom: 20px;
-    }
-
-    .gradient-text {
-      background: linear-gradient(135deg, var(--cyan) 0%, #a855f7 50%, var(--magenta) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero p {
-      font-size: clamp(16px, 2vw, 20px);
-      color: var(--text-muted);
-      max-width: 680px;
-      margin-bottom: 40px;
-    }
-
-    /* Interactive Voice Sphere Canvas */
-    .sphere-container {
-      position: relative;
-      width: 260px;
-      height: 260px;
-      margin: 10px auto 40px;
-      cursor: pointer;
-    }
-
-    #sphereCanvas {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-    }
-
-    .sphere-hint {
-      position: absolute;
-      bottom: -28px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 12px;
-      color: var(--cyan);
-      opacity: 0.8;
-      white-space: nowrap;
-    }
-
-    /* Download Buttons */
-    .cta-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
-      margin-bottom: 50px;
-    }
-
-    .download-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      padding: 18px 36px;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--bg-dark);
-      background: linear-gradient(135deg, var(--cyan) 0%, #00d2ff 100%);
-      border-radius: 40px;
-      text-decoration: none;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.45);
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .download-btn:hover {
-      transform: translateY(-4px) scale(1.03);
-      box-shadow: 0 0 50px rgba(0, 240, 255, 0.7);
-    }
-
-    .github-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 18px 30px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-      background: var(--surface-card);
-      border: 1px solid var(--card-border);
-      border-radius: 40px;
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-
-    .github-btn:hover {
-      background: #1a1e2e;
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-    }
-
-    /* App Mockup Section */
-    .mockup-section {
-      position: relative;
-      z-index: 2;
-      max-width: 1000px;
-      margin: 40px auto 80px;
-      padding: 0 20px;
-    }
-
-    .phone-frame {
-      max-width: 380px;
-      margin: 0 auto;
-      background: #0d0f17;
-      border-radius: 44px;
-      border: 4px solid #2a2f45;
-      padding: 24px 18px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 240, 255, 0.15);
-    }
-
-    .phone-screen {
-      background: #07080d;
-      border-radius: 32px;
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .mockup-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #1a1d2e;
-    }
-
-    .mockup-title {
-      font-weight: 800;
-      color: var(--cyan);
-      font-size: 16px;
-      letter-spacing: 1px;
-    }
-
-    .chat-bubble {
-      padding: 12px 16px;
-      border-radius: 18px;
-      font-size: 13px;
-      line-height: 1.4;
-      max-width: 85%;
-    }
-
-    .user-bubble {
-      align-self: flex-end;
-      background: linear-gradient(135deg, var(--blue), var(--purple));
-      color: #fff;
-      border-bottom-right-radius: 4px;
-    }
-
-    .neura-bubble {
-      align-self: flex-start;
-      background: #181b2b;
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      border-bottom-left-radius: 4px;
-    }
-
-    .widget-card {
-      background: #181b2b;
-      border: 1px solid #2e344d;
-      border-radius: 16px;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .widget-temp {
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    /* Features Grid */
-    .features {
-      position: relative;
-      z-index: 2;
-      max-width: 1100px;
-      margin: 60px auto 100px;
-      padding: 0 20px;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 50px;
-    }
-
-    .section-header h2 {
-      font-size: 36px;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-    }
-
-    .card {
-      background: var(--surface-card);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 30px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(0, 240, 255, 0.4);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    }
-
-    .card:hover::before {
-      opacity: 1;
-    }
-
-    .card-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 20px;
-      background: rgba(0, 240, 255, 0.1);
-      border: 1px solid rgba(0, 240, 255, 0.2);
-    }
-
-    .card h3 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: #fff;
-    }
-
-    .card p {
-      color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    /* Installation Steps */
-    .steps-section {
-      background: #0b0d14;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 80px 20px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .steps-container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 30px;
-      margin-top: 40px;
-    }
-
-    .step-box {
-      background: var(--surface-card);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .step-num {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--cyan), var(--purple));
-      color: var(--bg-dark);
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-muted);
-      font-size: 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      position: relative;
-      z-index: 2;
-    }
-
-    @keyframes pulseOrb {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--cyan)); }
-      50% { transform: scale(1.08); filter: drop-shadow(0 0 20px var(--magenta)); }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Campus Life — Nigerian University Life Simulator (Unilorin & Unilag)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/campus-style.css">
 </head>
-<body>
+<body class="time-morning">
 
-  <div class="ambient-glow"></div>
-  <div class="ambient-glow-bottom"></div>
+  <div class="ambient-halo"></div>
 
-  <!-- Header -->
-  <header>
-    <a href="#" class="logo">
-      <img src="logo.png" alt="Neura Logo" class="logo-img">
-      NEURA
-    </a>
-    <a href="https://github.com/SFWebSolution/Neura/releases/latest" class="nav-btn" target="_blank">Download APK</a>
-  </header>
+  <!-- Main Game Container -->
+  <div id="app-container">
 
-  <!-- Hero -->
-  <main class="hero">
-    <div class="badge">✨ Powered by Google Gemini 2.0 Flash &amp; Android Native Intelligence</div>
-    <h1>The Ultimate <span class="gradient-text">AI Voice Assistant</span> Built for Android</h1>
-    <p>Neura delivers seamless hands-free control, dynamic app launching, instant calling, alarms, real-time weather, and continuous wake-word listening ("Neura wake up") designed exclusively for Android.</p>
+    <!-- Top Game Header -->
+    <header class="game-header">
+      <div class="school-badge">
+        <div class="school-logo-icon">🏛️</div>
+        <div>
+          <div class="school-title" id="school-title">UNILORIN • Tunde</div>
+          <div class="school-subtitle" id="school-subtitle">Better By Far (200L Comp Sci)</div>
+        </div>
+      </div>
+      <div class="clock-widget">
+        <div class="clock-time" id="clock-time">08:30</div>
+        <div class="clock-phase" id="clock-phase">Morning • Day 14</div>
+      </div>
+    </header>
 
-    <!-- Interactive 3D Sphere -->
-    <div class="sphere-container" onclick="pulseSphere()">
-      <canvas id="sphereCanvas" width="520" height="520"></canvas>
-      <div class="sphere-hint">⚡ Tap the sphere to interact</div>
+    <!-- Core Stat Meters -->
+    <section class="meters-bar">
+      <div class="meter-card">
+        <div class="meter-header">
+          <span>⚡ Energy</span>
+          <span id="val-energy" style="color:#ffab00;">85%</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill fill-energy" id="fill-energy" style="width: 85%;"></div>
+        </div>
+      </div>
+
+      <div class="meter-card">
+        <div class="meter-header">
+          <span>🍔 Hunger</span>
+          <span id="val-hunger" style="color:#ff5722;">70%</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill fill-hunger" id="fill-hunger" style="width: 70%;"></div>
+        </div>
+      </div>
+
+      <div class="meter-card">
+        <div class="meter-header">
+          <span>📚 CGPA</span>
+          <span id="val-cgpa" style="color:#00e676;">3.42</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill fill-cgpa" id="fill-cgpa" style="width: 68%;"></div>
+        </div>
+      </div>
+
+      <div class="meter-card">
+        <div class="meter-header">
+          <span>🔥 Clout</span>
+          <span id="val-clout" style="color:#ff007f;">25%</span>
+        </div>
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill fill-clout" id="fill-clout" style="width: 25%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wallet & Semester Floating Pill -->
+    <div class="wallet-pill">
+      <div>
+        <div class="wallet-label">Bank Balance</div>
+        <div class="wallet-amount" id="wallet-amount">₦12,000</div>
+      </div>
+      <div class="semester-badge" id="semester-badge">Week 6 • 1st Sem</div>
     </div>
 
-    <!-- CTAs -->
-    <div class="cta-group">
-      <a href="https://github.com/SFWebSolution/Neura/releases/download/v1.0.0/Neura-v1.0.0.apk" class="download-btn" id="downloadApkLink">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Download Neura APK (v1.0.0)
-      </a>
-      <a href="https://github.com/SFWebSolution/Neura" class="github-btn" target="_blank">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        GitHub Repository
-      </a>
-    </div>
-  </main>
+    <!-- Scrollable Main Campus Viewport -->
+    <main class="main-viewport">
 
-  <!-- Live Mockup Showcase -->
-  <section class="mockup-section">
-    <div class="phone-frame">
+      <!-- Current Location Card -->
+      <section class="location-card">
+        <div class="location-top">
+          <div class="location-name" id="location-name"><span>📍</span> Tanke Junction</div>
+          <div class="location-tag" id="location-tag">Off-Campus Hub</div>
+        </div>
+        <div class="location-desc" id="location-desc">Commercial hub packed with Keke queues, student food joints, POS stands, and Tanke hold-up.</div>
+        <button class="action-btn" style="width: 100%; align-items: center; background: rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.3); color: var(--cyan); font-weight: 800; cursor: pointer;" onclick="UI.openMapLocationSelector()">
+          🗺️ Travel to Another Location (Campus Shuttle)
+        </button>
+      </section>
+
+      <!-- Campus Actions Section -->
+      <div class="actions-section-title">⚡ Instant Campus Actions</div>
+      <section class="actions-grid">
+        <button class="action-btn" onclick="attendLecture()">
+          <span class="action-icon">🎓</span>
+          <span class="action-title">Attend 2h Lecture</span>
+          <span class="action-costs">
+            <span class="cost-neg">-20⚡</span>
+            <span class="cost-neg">-15🍔</span>
+            <span class="cost-pos">+0.08📚</span>
+          </span>
+        </button>
+
+        <button class="action-btn" onclick="readNightClass()">
+          <span class="action-icon">📖</span>
+          <span class="action-title">TDB Night Class</span>
+          <span class="action-costs">
+            <span class="cost-neg">-35⚡</span>
+            <span class="cost-neg">-20🍔</span>
+            <span class="cost-pos">+0.22📚</span>
+          </span>
+        </button>
+
+        <button class="action-btn" onclick="takeNap()">
+          <span class="action-icon">😴</span>
+          <span class="action-title">Hostel Nap (3h)</span>
+          <span class="action-costs">
+            <span class="cost-pos">+45⚡</span>
+            <span style="color:var(--text-muted);">Rest up</span>
+          </span>
+        </button>
+
+        <button class="action-btn" onclick="sleepFullNight()">
+          <span class="action-icon">🛏️</span>
+          <span class="action-title">Full Night Sleep</span>
+          <span class="action-costs">
+            <span class="cost-pos">100%⚡</span>
+            <span style="color:var(--text-muted);">Wake at 7am</span>
+          </span>
+        </button>
+
+        <button class="action-btn" onclick="partyNight()">
+          <span class="action-icon">🕺</span>
+          <span class="action-title">Club &amp; Party</span>
+          <span class="action-costs">
+            <span class="cost-neg">-₦8,000</span>
+            <span class="cost-pos">+20🔥</span>
+          </span>
+        </button>
+
+        <button class="action-btn" onclick="openPhone()">
+          <span class="action-icon">📱</span>
+          <span class="action-title">CampusPhone OS</span>
+          <span class="action-costs">
+            <span style="color:var(--cyan);">Bank, Eats &amp; Chitter</span>
+          </span>
+        </button>
+      </section>
+
+      <!-- Live Campus Activity Log Stream -->
+      <section class="activity-feed-card">
+        <div class="feed-header">
+          <span>📡 Live Campus Activity Feed</span>
+          <span style="font-size: 10px; color: var(--text-muted);">Auto-updating</span>
+        </div>
+        <div class="feed-logs" id="feed-logs">
+          <!-- Dynamic Logs injected by JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Floating Phone Trigger Button -->
+    <div class="phone-floating-btn" id="phone-floating-btn" title="Open CampusPhone">
+      📱
+      <div class="phone-badge-ping"></div>
+    </div>
+
+    <!-- Bottom Dock Navigation Bar -->
+    <nav class="bottom-dock">
+      <button class="dock-btn active" data-tab="campus">
+        <span class="dock-icon">🏛️</span>
+        <span class="dock-label">Campus</span>
+      </button>
+
+      <button class="dock-btn" data-tab="map">
+        <span class="dock-icon">🗺️</span>
+        <span class="dock-label">Locations</span>
+      </button>
+
+      <button class="dock-btn" data-tab="hustle">
+        <span class="dock-icon">💼</span>
+        <span class="dock-label">Hustles</span>
+      </button>
+
+      <button class="dock-btn" data-tab="profile">
+        <span class="dock-icon">🎓</span>
+        <span class="dock-label">Portal</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- The In-Game Smartphone Modal (CampusPhone 16) -->
+  <div class="phone-modal" id="phone-modal">
+    <div class="phone-chassis">
+      <div class="phone-island">
+        <div class="phone-island-cam"></div>
+      </div>
+
+      <div class="phone-status-bar">
+        <span>MTN 5G</span>
+        <span id="phone-time-clock">08:30</span>
+        <span>100% 🔋</span>
+      </div>
+
       <div class="phone-screen">
-        <div class="mockup-header">
-          <span class="mockup-title">NEURA</span>
-          <span style="font-size: 12px; color: var(--green);">● Online</span>
-        </div>
-        <div class="chat-bubble user-bubble">Turn on flashlight and check the weather in Tokyo</div>
-        <div class="widget-card">
-          <div>
-            <div style="font-size: 11px; color: #ffab00; font-weight: 700;">WEATHER FORECAST</div>
-            <div class="widget-temp">24°C</div>
-            <div style="font-size: 13px; color: var(--text-muted);">Clear sky • Tokyo, JP</div>
+
+        <!-- Phone Home Screen -->
+        <div id="phone-home-screen">
+          <div class="phone-home-header">
+            <div class="phone-time-huge" id="phone-time-huge">08:30</div>
+            <div class="phone-date-huge" id="phone-date-clock">Day 14 • Semester Week 6</div>
           </div>
-          <div style="font-size: 32px;">☀️</div>
+
+          <div class="app-grid">
+            <div class="app-icon-item" data-app="palmpay">
+              <div class="app-icon-box bg-palmpay">💳</div>
+              <div class="app-icon-name">PalmPay</div>
+            </div>
+
+            <div class="app-icon-item" data-app="chowdeck">
+              <div class="app-icon-box bg-chowdeck">🍲</div>
+              <div class="app-icon-name">ChowCampus</div>
+            </div>
+
+            <div class="app-icon-item" data-app="chitter">
+              <div class="app-icon-box bg-chitter">🐦</div>
+              <div class="app-icon-name">Chitter</div>
+            </div>
+
+            <div class="app-icon-item" data-app="hustle">
+              <div class="app-icon-box bg-hustle">💼</div>
+              <div class="app-icon-name">Hustles</div>
+            </div>
+
+            <div class="app-icon-item" data-app="portal">
+              <div class="app-icon-box bg-portal">🎓</div>
+              <div class="app-icon-name">Portal</div>
+            </div>
+
+            <div class="app-icon-item" data-app="settings">
+              <div class="app-icon-box bg-settings">🔄</div>
+              <div class="app-icon-name">New Life</div>
+            </div>
+          </div>
         </div>
-        <div class="chat-bubble neura-bubble">
-          Torch turned ON! The weather in Tokyo is 24°C and clear. How else can I help?
+
+        <!-- Inside App: PalmPay / Kuda Bank -->
+        <div class="phone-app-window" id="app-palmpay">
+          <div class="app-window-header">
+            <button class="app-back-btn">←</button>
+            <div class="app-window-title">PalmPay Campus Bank</div>
+          </div>
+          <div class="meter-card" style="padding: 16px; margin-bottom: 12px; background: linear-gradient(135deg, #7928ca, #3b0066);">
+            <div style="font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.7);">Available Balance</div>
+            <div style="font-size: 26px; font-weight: 900; color: #fff;" id="palmpay-balance">₦12,000</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 4px;">Tier 3 Student Account Verified</div>
+          </div>
+          <button class="action-btn" style="width: 100%; margin-bottom: 8px; align-items: center; background: rgba(0, 230, 118, 0.15); border-color: var(--primary); color: var(--primary); font-weight: 800; cursor: pointer;" onclick="alert('Sent ₦5,000 urgent allowance to coursemate!')">
+            💸 Send Money / Transfer
+          </button>
+          <button class="action-btn" style="width: 100%; align-items: center; background: rgba(255, 171, 0, 0.15); border-color: var(--accent); color: var(--accent); font-weight: 800; cursor: pointer;" onclick="game.stats.cash += 10000; game.stats.debt += 12000; UI.renderAll(); alert('Emergency ₦10,000 soft loan credited! Payback ₦12,000 at end of semester.');">
+            ⚡ Take Emergency ₦10k Student Loan
+          </button>
         </div>
+
+        <!-- Inside App: ChowCampus (Food Delivery) -->
+        <div class="phone-app-window" id="app-chowdeck">
+          <div class="app-window-header">
+            <button class="app-back-btn">←</button>
+            <div class="app-window-title">ChowCampus Food Delivery</div>
+          </div>
+          <div id="chowdeck-food-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Inside App: Chitter (Campus Twitter/X & Gossip) -->
+        <div class="phone-app-window" id="app-chitter">
+          <div class="app-window-header">
+            <button class="app-back-btn">←</button>
+            <div class="app-window-title">Chitter 9ja Campus Trends</div>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <input type="text" id="chitter-input" class="form-input" style="flex:1; padding:10px;" placeholder="What's happening on campus?">
+            <button id="chitter-send-btn" class="action-btn" style="background:var(--cyan); color:#000; font-weight:800; border:none; padding:10px 14px; border-radius:12px; cursor:pointer;">Tweet</button>
+          </div>
+          <div id="chitter-posts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Inside App: Campus Hustles -->
+        <div class="phone-app-window" id="app-hustle">
+          <div class="app-window-header">
+            <button class="app-back-btn">←</button>
+            <div class="app-window-title">Campus Side Gigs &amp; Hustles</div>
+          </div>
+          <div id="hustle-jobs-list"></div>
+        </div>
+
+        <!-- Inside App: Student Portal -->
+        <div class="phone-app-window" id="app-portal">
+          <div class="app-window-header">
+            <button class="app-back-btn">←</button>
+            <div class="app-window-title">University Academic Portal</div>
+          </div>
+          <div class="meter-card" style="padding: 16px; margin-bottom: 12px; text-align: center;">
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Current Cumulative GPA</div>
+            <div style="font-size: 38px; font-weight: 900; color: var(--primary);" id="portal-cgpa-score">3.42</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-top: 4px;" id="portal-standing-text">Second Class Upper (2:1)</div>
+          </div>
+          <button class="action-btn" style="width: 100%; align-items: center; background: rgba(0, 230, 118, 0.15); border-color: var(--primary); color: #fff; font-weight: 700; cursor: pointer;" onclick="alert('School fees paid and course form endorsed by Departmental Course Adviser!')">
+            📄 Register 22 Credit Units
+          </button>
+        </div>
+
+        <!-- Inside App: Settings / New Life -->
+        <div class="phone-app-window" id="app-settings">
+          <div class="app-window-header">
+            <button class="app-back-btn">←</button>
+            <div class="app-window-title">Settings &amp; Options</div>
+          </div>
+          <button class="action-btn" style="width: 100%; align-items: center; background: rgba(255, 51, 102, 0.15); border-color: var(--danger); color: var(--danger); font-weight: 800; cursor: pointer;" onclick="if(confirm('Are you sure you want to drop out and start a fresh campus life?')) { localStorage.removeItem('campus_life_save'); location.reload(); }">
+            🔄 Drop Out &amp; Restart Fresh Life
+          </button>
+        </div>
+
       </div>
+
+      <div class="phone-home-bar" id="phone-home-bar" title="Swipe to close"></div>
     </div>
-  </section>
+  </div>
 
-  <!-- Features Grid -->
-  <section class="features">
-    <div class="section-header">
-      <h2>Everything You Need in a Voice Assistant</h2>
-      <p style="color: var(--text-muted);">Designed from the ground up for deep Android hardware integration.</p>
+  <!-- Character Spawn Screen (New Life Creation) -->
+  <div class="spawn-screen" id="spawn-screen" style="display: none;">
+    <div class="spawn-header">
+      <h1>🎓 Campus Life</h1>
+      <p>The Ultimate Nigerian University Simulation Game (Unilorin &amp; Unilag)</p>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="card-icon">🧠</div>
-        <h3>OpenAI GPT-4o Brain</h3>
-        <p>Ultra-smart, contextual conversational abilities powered by GPT-4o with autonomous tool calling.</p>
+    <div class="spawn-form">
+      <div class="form-group">
+        <label class="form-label">Student Name</label>
+        <input type="text" id="spawn-name" class="form-input" value="Tunde" placeholder="Enter student name">
       </div>
 
-      <div class="card">
-        <div class="card-icon">📞</div>
-        <h3>Hands-Free Calls &amp; SMS</h3>
-        <p>Make direct calls to contacts and compose text messages completely hands-free.</p>
+      <div class="form-group">
+        <label class="form-label">Gender</label>
+        <select id="spawn-gender" class="form-input">
+          <option value="male">Male (Guy man)</option>
+          <option value="female">Female (Baddie / Scholar)</option>
+        </select>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🚀</div>
-        <h3>Dynamic App Launcher</h3>
-        <p>Launch any installed app (Spotify, YouTube, WhatsApp, Maps, Camera) instantly by voice.</p>
+      <div class="form-group">
+        <label class="form-label">Select University</label>
+        <select id="spawn-uni" class="form-input">
+          <option value="unilorin">University of Ilorin (Better By Far - Tanke, PS, CBT)</option>
+          <option value="unilag">University of Lagos (Akoka - New Hall, Lagoon Front)</option>
+        </select>
       </div>
 
-      <div class="card">
-        <div class="card-icon">⏰</div>
-        <h3>Alarms &amp; Timers</h3>
-        <p>Set alarms, countdown timers, and schedule calendar events in seconds.</p>
+      <div class="form-group">
+        <label class="form-label">Department / Course of Study</label>
+        <select id="spawn-dept" class="form-input">
+          <option value="Computer Science">Computer Science</option>
+          <option value="Mass Communication">Mass Communication</option>
+          <option value="Medicine & Surgery">Medicine &amp; Surgery</option>
+          <option value="Law">Law</option>
+          <option value="Economics">Economics</option>
+        </select>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🔦</div>
-        <h3>Hardware Controls</h3>
-        <p>Toggle flashlight, adjust ringer/media volume, and query battery telemetry.</p>
+      <div class="form-group">
+        <label class="form-label">Choose Your Spawn Background</label>
+        <input type="hidden" id="selected-class" value="trench">
+
+        <div class="spawn-class-cards">
+          <!-- Nepo Baby -->
+          <div class="class-card" data-class="nepo">
+            <div class="class-card-header">
+              <span class="class-card-title">👑 Nepo Baby (Rich Kid)</span>
+              <span class="class-perk-badge" style="color:var(--cyan);">₦850,000 Bank</span>
+            </div>
+            <div class="class-card-desc">iPhone 16 Pro Max, 2-bedroom luxury off-campus flat, high starting clout. But high peer pressure and fake friends beg for money 24/7.</div>
+          </div>
+
+          <!-- Trench Grinder -->
+          <div class="class-card selected" data-class="trench">
+            <div class="class-card-header">
+              <span class="class-card-title">⚡ Trench Grinder (Lapo Hustler)</span>
+              <span class="class-perk-badge" style="color:var(--accent);">₦4,500 Bank</span>
+            </div>
+            <div class="class-card-desc">Cracked Android, squatting in hostel with 6 coursemates. Must do campus hustles (POS, assignment writing, crypto) to pay handouts and survive.</div>
+          </div>
+
+          <!-- The Scholar -->
+          <div class="class-card" data-class="scholar">
+            <div class="class-card-header">
+              <span class="class-card-title">📚 The Scholar (Jambite Genius)</span>
+              <span class="class-perk-badge" style="color:var(--primary);">4.88 CGPA</span>
+            </div>
+            <div class="class-card-desc">First class academic headstart, library rat, study group leader. But extreme academic stress and lecture politics can take a toll.</div>
+          </div>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-icon">⚡</div>
-        <h3>Floating Orb &amp; Default Assistant</h3>
-        <p>Float over any app with the pulsating glowing bubble, or trigger via your phone's power button.</p>
-      </div>
+      <button class="start-life-btn" id="start-life-btn">🚀 Begin My Campus Life</button>
     </div>
-  </section>
+  </div>
 
-  <!-- Installation Steps -->
-  <section class="steps-section">
-    <div class="steps-container">
-      <div class="section-header">
-        <h2>Quick 3-Step Setup</h2>
-        <p style="color: var(--text-muted);">Get Neura running on your Android device in under 1 minute.</p>
-      </div>
-
-      <div class="steps-grid">
-        <div class="step-box">
-          <div class="step-num">1</div>
-          <h4 style="margin-bottom: 8px;">Download APK</h4>
-          <p style="color: var(--text-muted); font-size: 13px;">Tap the download button above on your Android phone.</p>
-        </div>
-        <div class="step-box">
-          <div class="step-num">2</div>
-          <h4 style="margin-bottom: 8px;">Install on Phone</h4>
-          <p style="color: var(--text-muted); font-size: 13px;">Open the downloaded file and tap "Install" (allow unknown sources if asked).</p>
-        </div>
-        <div class="step-box">
-          <div class="step-num">3</div>
-          <h4 style="margin-bottom: 8px;">Start Talking</h4>
-          <p style="color: var(--text-muted); font-size: 13px;">Open Neura, grant microphone permission, and tap the glowing sphere!</p>
-        </div>
-      </div>
+  <!-- Random Event Modal (Naija Campus Encounters) -->
+  <div class="event-modal" id="event-modal">
+    <div class="event-box">
+      <div class="event-badge">🚨 Campus Encounter</div>
+      <div class="event-title" id="event-title">Dress Code Marshall Caught You!</div>
+      <div class="event-desc" id="event-desc">A strict lecturer stops you on Walkway and claims your jeans are fitted.</div>
+      <div class="event-options" id="event-options"></div>
     </div>
-  </section>
+  </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>© 2026 Neura AI Assistant. Built for Android. All rights reserved.</p>
-  </footer>
-
-  <!-- Canvas Fluid Sphere Shader Script -->
-  <script>
-    const canvas = document.getElementById('sphereCanvas');
-    const ctx = canvas.getContext('2d');
-    let angle = 0;
-    let pulseFactor = 1;
-
-    function drawSphere() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-      const r = 160 * pulseFactor;
-
-      // Glow Gradient
-      const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 10, cx, cy, r * 1.5);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(0.2, '#00f0ff');
-      grad.addColorStop(0.6, '#7928ca');
-      grad.addColorStop(0.9, '#ff007f');
-      grad.addColorStop(1, 'transparent');
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.shadowColor = '#00f0ff';
-      ctx.shadowBlur = 30 * pulseFactor;
-      ctx.fill();
-      ctx.restore();
-
-      // Rotating orbital ring 1
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, r * 1.2, r * 0.7, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.restore();
-
-      // Rotating orbital ring 2
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(-angle * 1.4);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, r * 1.1, r * 0.5, Math.PI / 4, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 0, 127, 0.6)';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.restore();
-
-      angle += 0.015;
-      if (pulseFactor > 1) {
-        pulseFactor -= 0.01;
-      }
-
-      requestAnimationFrame(drawSphere);
-    }
-
-    function pulseSphere() {
-      pulseFactor = 1.25;
-    }
-
-    drawSphere();
-  </script>
-
+  <!-- Game Scripts -->
+  <script src="js/game-engine.js"></script>
+  <script src="js/ui-controller.js"></script>
 </body>
 </html>
