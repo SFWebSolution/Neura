@@ -15,6 +15,11 @@ const UI = {
       this.renderAll();
     }
 
+    // Initialize CloudSync if available
+    if (window.cloudSync) {
+      window.cloudSync.init();
+    }
+
     // Live clock ticker
     setInterval(() => {
       game.advanceTime(1);
@@ -46,7 +51,9 @@ const UI = {
       phoneModal: document.getElementById("phone-modal"),
       phoneFloatingBtn: document.getElementById("phone-floating-btn"),
       eventModal: document.getElementById("event-modal"),
-      spawnScreen: document.getElementById("spawn-screen")
+      spawnScreen: document.getElementById("spawn-screen"),
+      authModal: document.getElementById("auth-modal"),
+      authBadge: document.getElementById("auth-badge")
     };
   },
 
@@ -107,6 +114,13 @@ const UI = {
         this.handleSpawnSubmit();
       });
     }
+
+    // Auth Button in header
+    if (this.dom.authBadge) {
+      this.dom.authBadge.addEventListener("click", () => {
+        this.openAuthModal();
+      });
+    }
   },
 
   renderAll() {
@@ -142,6 +156,30 @@ const UI = {
     // Wallet & Semester
     this.dom.walletAmount.textContent = game.formatMoney(game.stats.cash);
     this.dom.semesterBadge.textContent = `Week ${game.time.semesterWeek} • 1st Sem`;
+  },
+
+  updateAuthBadge(user) {
+    if (!this.dom.authBadge) return;
+    if (user) {
+      const email = user.email ? user.email.split("@")[0] : "Guest Player";
+      this.dom.authBadge.innerHTML = `<span style="color:#00e676;">☁️</span> ${email}`;
+      this.dom.authBadge.title = "Cloud Save Synced via Firebase";
+    } else {
+      this.dom.authBadge.innerHTML = `<span style="color:#ffab00;">👤</span> Sign In`;
+      this.dom.authBadge.title = "Click to Sign Up or Login";
+    }
+  },
+
+  openAuthModal() {
+    if (this.dom.authModal) {
+      this.dom.authModal.classList.add("open");
+    }
+  },
+
+  closeAuthModal() {
+    if (this.dom.authModal) {
+      this.dom.authModal.classList.remove("open");
+    }
   },
 
   renderLocation() {
@@ -277,6 +315,7 @@ const UI = {
 
   renderChitterFeed() {
     const container = document.getElementById("chitter-posts-list");
+    if (!container) return;
     container.innerHTML = "";
     game.chitterFeed.forEach(post => {
       const card = document.createElement("div");
@@ -286,7 +325,7 @@ const UI = {
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
           <span style="font-size:12px; font-weight:800; color:var(--cyan);">${post.author}</span>
-          <span style="font-size:10px; color:var(--text-muted);">${post.time}</span>
+          <span style="font-size:10px; color:var(--text-muted);">${post.time || "Just now"}</span>
         </div>
         <div style="font-size:12.5px; color:#fff; line-height:1.4;">${post.text}</div>
       `;

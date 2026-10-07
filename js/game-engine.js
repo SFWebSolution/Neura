@@ -365,6 +365,9 @@ class GameState {
         activityLog: this.activityLog.slice(0, 20)
       };
       localStorage.setItem("campus_life_save", JSON.stringify(data));
+      if (window.cloudSync) {
+        window.cloudSync.saveToCloud();
+      }
     } catch (e) {}
   }
 
@@ -562,6 +565,9 @@ class GameState {
     });
     this.addLog("Posted a viral take on Chitter! Gained +6 Clout 🔥", "positive");
     sfx.playNotification();
+    if (window.cloudSync) {
+      window.cloudSync.postLiveTweet(tweetText);
+    }
     this.saveGame();
   }
 }
